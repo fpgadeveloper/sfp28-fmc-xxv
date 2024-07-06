@@ -1,0 +1,62 @@
+/include/ "system-conf.dtsi"
+/include/ "port-config.dtsi"
+/ {
+	ref_xtal: ref_xtal {
+		compatible = "fixed-clock";
+		#clock-cells = <0>;
+		clock-frequency = <114285000>;
+	};
+};
+
+&axi_iic_0 {
+    i2c-mux@70 {
+        compatible = "nxp,pca9548";
+        #address-cells = <1>;
+        #size-cells = <0>;
+        reg = <0x70>;
+		i2c@0 {
+			#address-cells = <1>;
+			#size-cells = <0>;
+			reg = <0>;
+			/* SFP28 slot 0 */
+		};
+		i2c@1 {
+			#address-cells = <1>;
+			#size-cells = <0>;
+			reg = <1>;
+			/* SFP28 slot 1 */
+		};
+		i2c@2 {
+			#address-cells = <1>;
+			#size-cells = <0>;
+			reg = <2>;
+			/* SFP28 slot 2 */
+		};
+		i2c@3 {
+			#address-cells = <1>;
+			#size-cells = <0>;
+			reg = <3>;
+			/* SFP28 slot 3 */
+		};
+		i2c@4 {
+			#address-cells = <1>;
+			#size-cells = <0>;
+			reg = <4>;
+			fmc_si5328: clock-generator@68 {
+				compatible = "silabs,si5328";
+				reg = <0x68>;
+				#address-cells = <1>;
+				#size-cells = <0>;
+				#clock-cells = <1>;
+				clocks = <&ref_xtal>;
+				clock-names = "xtal";
+				clock-output-names = "si5328";
+
+				fmc_si5328_clk: clk0@0 {
+					reg = <0>;
+					clock-frequency = <156250000>;
+				};
+			};
+		};
+    };
+};
