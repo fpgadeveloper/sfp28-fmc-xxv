@@ -54,8 +54,8 @@ require a license to generate a bitstream with the AMD Xilinx tools.
 | [VMK180]            | `vmk180_fmcp2`    | 4x          | FMCP2       | YES |
 | [VCU118]            | `vcu118`          | 4x          | FMCP        | YES |
 | [ZC706]             | `zc706_hpc`       | 4x          | HPC         | YES |
-| [ZCU106]            | `zcu102_hpc0`     | 4x          | HPC0        | YES |
-| [ZCU106]            | `zcu102_hpc1`     | 4x          | HPC1        | YES |
+| [ZCU102]            | `zcu102_hpc0`     | 4x          | HPC0        | YES |
+| [ZCU102]            | `zcu102_hpc1`     | 4x          | HPC1        | YES |
 | [ZCU106]            | `zcu106_hpc0`     | 4x          | HPC0        | NO  |
 | [ZCU111]            | `zcu111`          | 4x          | FMCP        | YES |
 | [ZCU208]            | `zcu208`          | 4x          | FMCP        | YES |
@@ -102,5 +102,18 @@ Follow our blog, [FPGA Developer](https://www.fpgadeveloper.com "FPGA Developer"
 updates on the awesome projects we work on.
 
 [Quad SFP28 FMC]: https://ethernetfmc.com/docs/quad-sfp28-fmc/overview/
-
+[KC705]: https://www.xilinx.com/kc705
+[VC707]: https://www.xilinx.com/vc707
+[VC709]: https://www.xilinx.com/vc709
+[VCK190]: https://www.xilinx.com/vck190
+[VMK180]: https://www.xilinx.com/vmk180
+[VCU108]: https://www.xilinx.com/vcu108
+[VCU118]: https://www.xilinx.com/vcu118
+[KCU105]: https://www.xilinx.com/kcu105
+[ZC706]: https://www.xilinx.com/zc706
+[ZCU111]: https://www.xilinx.com/zcu111
+[ZCU208]: https://www.xilinx.com/zcu208
+[UltraZed-EV carrier]: https://www.xilinx.com/products/boards-and-kits/1-y3n9v1.html
+[ZCU102]: https://www.xilinx.com/zcu102
+[ZCU106]: https://www.xilinx.com/zcu106
 
