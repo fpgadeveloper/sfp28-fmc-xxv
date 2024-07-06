@@ -11,25 +11,6 @@ proc str_contains {str substr} {
   }
 }
 
-# Board specific PCIe and GT LOCs
-if {[str_contains $target "zcu104"]} {
-  set select_quad_0 "GTH_Quad_226"
-} elseif {[str_contains $target "zcu106_hpc0"]} {
-  set select_quad_0 "GTH_Quad_226"
-  set select_quad_1 "GTH_Quad_227"
-} elseif {[str_contains $target "zcu106_hpc1"]} {
-  set select_quad_0 "GTH_Quad_223"
-} elseif {[str_contains $target "zcu111"]} {
-  set select_quad_0 "GTY_Quad_129"
-  set select_quad_1 "GTY_Quad_130"
-} elseif {[str_contains $target "zcu208"]} {
-  set select_quad_0 "GTY_Quad_130"
-  set select_quad_1 "GTY_Quad_131"
-} elseif {[str_contains $target "uzev"]} {
-  set select_quad_0 "GTH_Quad_225"
-  set select_quad_1 "GTH_Quad_224"
-}
-
 # CHECKING IF PROJECT EXISTS
 if { [get_projects -quiet] eq "" } {
    puts "ERROR: Please open or create a project!"
@@ -143,12 +124,6 @@ connect_bd_intf_net [get_bd_intf_pins xxv_ethernet_0/gt_serial_port] [get_bd_int
 create_bd_intf_port -mode Slave -vlnv xilinx.com:interface:diff_clock_rtl:1.0 eth0_ref_clk
 set_property CONFIG.FREQ_HZ 156250000 [get_bd_intf_ports /eth0_ref_clk]
 connect_bd_intf_net [get_bd_intf_pins xxv_ethernet_0/gt_ref_clk] [get_bd_intf_ports eth0_ref_clk]
-
-# Constant to enable SFP TX
-set const_tx_dis [ create_bd_cell -type ip -vlnv xilinx.com:ip:xlconstant const_tx_dis ]
-create_bd_port -dir O tx_disable
-connect_bd_net [get_bd_pins const_tx_dis/dout] [get_bd_ports tx_disable]
-set_property -dict [list CONFIG.CONST_VAL {1}] $const_tx_dis
 
 #########################################################
 # AXI DMA
