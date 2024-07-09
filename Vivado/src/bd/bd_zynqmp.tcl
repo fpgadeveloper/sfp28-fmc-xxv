@@ -57,20 +57,17 @@ set priority_intr_list {}
 create_bd_cell -type ip -vlnv xilinx.com:ip:zynq_ultra_ps_e zynq_ultra_ps_e_0
 apply_bd_automation -rule xilinx.com:bd_rule:zynq_ultra_ps_e -config {apply_board_preset "1" }  [get_bd_cells zynq_ultra_ps_e_0]
 
-# Configure the PS: Enable HP0 and HP1 (for dual designs) to DDR
+# Configure the PS: Enable HP0-3 for SFP slots 0-4
+# SFP0 to HP0 (S_AXI_GP2), SFP1 to HP1 (S_AXI_GP3), SFP2 to HP2 (S_AXI_GP4), SFP3 to HP3 (S_AXI_GP5)
 set_property -dict [list CONFIG.PSU__USE__S_AXI_GP2 {1} \
-CONFIG.PSU__USE__S_AXI_GP3 {0} \
+CONFIG.PSU__USE__S_AXI_GP3 {1} \
+CONFIG.PSU__USE__S_AXI_GP4 {1} \
+CONFIG.PSU__USE__S_AXI_GP5 {1} \
 CONFIG.PSU__USE__M_AXI_GP0 {0} \
 CONFIG.PSU__USE__M_AXI_GP1 {0} \
 CONFIG.PSU__USE__M_AXI_GP2 {1} \
 CONFIG.PSU__USE__IRQ0 {1} \
 CONFIG.PSU__HIGH_ADDRESS__ENABLE {1}] [get_bd_cells zynq_ultra_ps_e_0]
-
-# Connect the PS clocks
-#connect_bd_net [get_bd_pins zynq_ultra_ps_e_0/pl_clk0] [get_bd_pins zynq_ultra_ps_e_0/maxihpm0_fpd_aclk]
-connect_bd_net [get_bd_pins zynq_ultra_ps_e_0/pl_clk0] [get_bd_pins zynq_ultra_ps_e_0/saxihp0_fpd_aclk]
-#connect_bd_net [get_bd_pins zynq_ultra_ps_e_0/pl_clk0] [get_bd_pins zynq_ultra_ps_e_0/maxihpm1_fpd_aclk]
-#connect_bd_net [get_bd_pins zynq_ultra_ps_e_0/pl_clk0] [get_bd_pins zynq_ultra_ps_e_0/saxihp1_fpd_aclk]
 
 # Add proc system reset for PL clock 100MHz
 create_bd_cell -type ip -vlnv xilinx.com:ip:proc_sys_reset rst_ps_100m
@@ -78,163 +75,69 @@ connect_bd_net [get_bd_pins zynq_ultra_ps_e_0/pl_clk0] [get_bd_pins rst_ps_100m/
 connect_bd_net [get_bd_pins zynq_ultra_ps_e_0/pl_resetn0] [get_bd_pins rst_ps_100m/ext_reset_in]
 
 #########################################################
-# 10G Ethernet core
+# 10G/25G Ethernet core
 #########################################################
 
-# Add the 10G Ethernet
+# Add the 10G/25G Ethernet
 create_bd_cell -type ip -vlnv xilinx.com:ip:xxv_ethernet xxv_ethernet_0
-set_property CONFIG.BASE_R_KR {BASE-R} [get_bd_cells xxv_ethernet_0]
-lappend hpm0_lpd_ports [list "xxv_ethernet_0/s_axi_0" "zynq_ultra_ps_e_0/pl_clk0" "rst_ps_100m/peripheral_aresetn"]
+set_property -dict [list \
+  CONFIG.NUM_OF_CORES {4} \
+  CONFIG.BASE_R_KR {BASE-R} \
+  CONFIG.GT_REF_CLK_FREQ {156.25} \
+  ] [get_bd_cells xxv_ethernet_0]
 
 # Clocks
 connect_bd_net [get_bd_pins zynq_ultra_ps_e_0/pl_clk0] [get_bd_pins xxv_ethernet_0/dclk]
-connect_bd_net [get_bd_pins zynq_ultra_ps_e_0/pl_clk0] [get_bd_pins xxv_ethernet_0/s_axi_aclk_0]
-connect_bd_net [get_bd_pins xxv_ethernet_0/rx_clk_out_0] [get_bd_pins xxv_ethernet_0/rx_core_clk_0]
+
+foreach label {0 1 2 3} {
+  lappend hpm0_lpd_ports [list "xxv_ethernet_0/s_axi_$label" "zynq_ultra_ps_e_0/pl_clk0" "rst_ps_100m/peripheral_aresetn"]
+
+  # Clocks
+  connect_bd_net [get_bd_pins zynq_ultra_ps_e_0/pl_clk0] [get_bd_pins xxv_ethernet_0/s_axi_aclk_$label]
+  connect_bd_net [get_bd_pins xxv_ethernet_0/rx_clk_out_$label] [get_bd_pins xxv_ethernet_0/rx_core_clk_$label]
+}
 
 # Resets
 connect_bd_net [get_bd_pins rst_ps_100m/peripheral_reset] [get_bd_pins xxv_ethernet_0/sys_reset]
-connect_bd_net [get_bd_pins rst_ps_100m/peripheral_aresetn] [get_bd_pins xxv_ethernet_0/s_axi_aresetn_0]
 create_bd_cell -type ip -vlnv xilinx.com:ip:util_vector_logic logic_not
 set_property -dict [list CONFIG.C_OPERATION {not} CONFIG.C_SIZE {1} ] [get_bd_cells logic_not]
 connect_bd_net [get_bd_pins zynq_ultra_ps_e_0/pl_resetn0] [get_bd_pins logic_not/Op1]
-connect_bd_net [get_bd_pins logic_not/Res] [get_bd_pins xxv_ethernet_0/gtwiz_reset_tx_datapath_0]
-connect_bd_net [get_bd_pins logic_not/Res] [get_bd_pins xxv_ethernet_0/gtwiz_reset_rx_datapath_0]
+foreach label {0 1 2 3} {
+  connect_bd_net [get_bd_pins rst_ps_100m/peripheral_aresetn] [get_bd_pins xxv_ethernet_0/s_axi_aresetn_$label]
+  connect_bd_net [get_bd_pins logic_not/Res] [get_bd_pins xxv_ethernet_0/gtwiz_reset_tx_datapath_$label]
+  connect_bd_net [get_bd_pins logic_not/Res] [get_bd_pins xxv_ethernet_0/gtwiz_reset_rx_datapath_$label]
+}
 
-# Constants for 10G Ethernet core
+# Constants for 10G/25G Ethernet core
 set const_low [ create_bd_cell -type ip -vlnv xilinx.com:ip:xlconstant const_low ]
 set_property CONFIG.CONST_VAL {0} [get_bd_cells const_low]
-connect_bd_net [get_bd_pins const_low/dout] [get_bd_pins xxv_ethernet_0/ctl_tx_send_idle_0]
-connect_bd_net [get_bd_pins const_low/dout] [get_bd_pins xxv_ethernet_0/ctl_tx_send_lfi_0]
-connect_bd_net [get_bd_pins const_low/dout] [get_bd_pins xxv_ethernet_0/ctl_tx_send_rfi_0]
+foreach label {0 1 2 3} {
+  connect_bd_net [get_bd_pins const_low/dout] [get_bd_pins xxv_ethernet_0/ctl_tx_send_idle_$label]
+  connect_bd_net [get_bd_pins const_low/dout] [get_bd_pins xxv_ethernet_0/ctl_tx_send_lfi_$label]
+  connect_bd_net [get_bd_pins const_low/dout] [get_bd_pins xxv_ethernet_0/ctl_tx_send_rfi_$label]
+}
 
 set const_clksel [ create_bd_cell -type ip -vlnv xilinx.com:ip:xlconstant const_clksel ]
 set_property -dict [list CONFIG.CONST_VAL {5} CONFIG.CONST_WIDTH {3} ] [get_bd_cells const_clksel]
-connect_bd_net [get_bd_pins const_clksel/dout] [get_bd_pins xxv_ethernet_0/txoutclksel_in_0]
-connect_bd_net [get_bd_pins const_clksel/dout] [get_bd_pins xxv_ethernet_0/rxoutclksel_in_0]
+foreach label {0 1 2 3} {
+  connect_bd_net [get_bd_pins const_clksel/dout] [get_bd_pins xxv_ethernet_0/txoutclksel_in_$label]
+  connect_bd_net [get_bd_pins const_clksel/dout] [get_bd_pins xxv_ethernet_0/rxoutclksel_in_$label]
+}
 
 set const_preamble [ create_bd_cell -type ip -vlnv xilinx.com:ip:xlconstant const_preamble ]
 set_property -dict [list CONFIG.CONST_VAL {0} CONFIG.CONST_WIDTH {56} ] [get_bd_cells const_preamble]
-connect_bd_net [get_bd_pins const_preamble/dout] [get_bd_pins xxv_ethernet_0/tx_preamblein_0]
+foreach label {0 1 2 3} {
+  connect_bd_net [get_bd_pins const_preamble/dout] [get_bd_pins xxv_ethernet_0/tx_preamblein_$label]
+}
 
-# Add MGT external port
-create_bd_intf_port -mode Master -vlnv xilinx.com:interface:gt_rtl:1.0 eth0_gt
-connect_bd_intf_net [get_bd_intf_pins xxv_ethernet_0/gt_serial_port] [get_bd_intf_ports eth0_gt]
+# Add GT external port
+create_bd_intf_port -mode Master -vlnv xilinx.com:interface:gt_rtl:1.0 sfp_gt
+connect_bd_intf_net [get_bd_intf_pins xxv_ethernet_0/gt_serial_port] [get_bd_intf_ports sfp_gt]
 
-# Add MGT ref clock port
-create_bd_intf_port -mode Slave -vlnv xilinx.com:interface:diff_clock_rtl:1.0 eth0_ref_clk
-set_property CONFIG.FREQ_HZ 156250000 [get_bd_intf_ports /eth0_ref_clk]
-connect_bd_intf_net [get_bd_intf_pins xxv_ethernet_0/gt_ref_clk] [get_bd_intf_ports eth0_ref_clk]
-
-#########################################################
-# AXI DMA
-#########################################################
-
-create_bd_cell -type ip -vlnv xilinx.com:ip:axi_dma axi_dma_eth0
-lappend hpm0_lpd_ports [list "axi_dma_eth0/S_AXI_LITE" "zynq_ultra_ps_e_0/pl_clk0" "rst_ps_100m/peripheral_aresetn"]
-
-set_property -dict [list CONFIG.c_s_axis_s2mm_tdata_width.VALUE_SRC USER CONFIG.c_m_axi_s2mm_data_width.VALUE_SRC USER] [get_bd_cells axi_dma_eth0]
-set_property -dict [list \
-  CONFIG.c_include_sg {1} \
-  CONFIG.c_m_axi_mm2s_data_width {64} \
-  CONFIG.c_m_axis_mm2s_tdata_width {64} \
-  CONFIG.c_mm2s_burst_size {64} \
-  CONFIG.c_sg_include_stscntrl_strm {0} \
-  CONFIG.c_sg_length_width {16} \
-  CONFIG.c_include_mm2s_dre {1} \
-  CONFIG.c_include_s2mm_dre {1} \
-  CONFIG.c_m_axi_s2mm_data_width {64} \
-  CONFIG.c_s_axis_s2mm_tdata_width {64} \
-] [get_bd_cells axi_dma_eth0]
-
-# Clocks
-connect_bd_net [get_bd_pins zynq_ultra_ps_e_0/pl_clk0] [get_bd_pins axi_dma_eth0/s_axi_lite_aclk]
-connect_bd_net [get_bd_pins zynq_ultra_ps_e_0/pl_clk0] [get_bd_pins axi_dma_eth0/m_axi_sg_aclk]
-connect_bd_net [get_bd_pins xxv_ethernet_0/tx_clk_out_0] [get_bd_pins axi_dma_eth0/m_axi_mm2s_aclk]
-connect_bd_net [get_bd_pins xxv_ethernet_0/rx_clk_out_0] [get_bd_pins axi_dma_eth0/m_axi_s2mm_aclk]
-
-# Resets
-connect_bd_net [get_bd_pins rst_ps_100m/peripheral_aresetn] [get_bd_pins axi_dma_eth0/axi_resetn]
-
-# DMA TX reset
-create_bd_cell -type ip -vlnv xilinx.com:ip:util_vector_logic logic_dma_tx_rst_eth0
-set_property -dict [list CONFIG.C_OPERATION {not} CONFIG.C_SIZE {1} ] [get_bd_cells logic_dma_tx_rst_eth0]
-connect_bd_net [get_bd_pins axi_dma_eth0/mm2s_prmry_reset_out_n] [get_bd_pins logic_dma_tx_rst_eth0/Op1]
-connect_bd_net [get_bd_pins logic_dma_tx_rst_eth0/Res] [get_bd_pins xxv_ethernet_0/tx_reset_0]
-
-# DMA RX reset
-create_bd_cell -type ip -vlnv xilinx.com:ip:util_vector_logic logic_dma_rx_rst_eth0
-set_property -dict [list CONFIG.C_OPERATION {not} CONFIG.C_SIZE {1} ] [get_bd_cells logic_dma_rx_rst_eth0]
-connect_bd_net [get_bd_pins axi_dma_eth0/s2mm_prmry_reset_out_n] [get_bd_pins logic_dma_rx_rst_eth0/Op1]
-connect_bd_net [get_bd_pins logic_dma_rx_rst_eth0/Res] [get_bd_pins xxv_ethernet_0/rx_reset_0]
-
-# Interrupts
-lappend priority_intr_list "axi_dma_eth0/mm2s_introut"
-lappend priority_intr_list "axi_dma_eth0/s2mm_introut"
-
-# AXI Interconnect for HP0 interface
-create_bd_cell -type ip -vlnv xilinx.com:ip:axi_interconnect axi_int_hp0
-set_property -dict [list \
-  CONFIG.NUM_MI {1} \
-  CONFIG.NUM_SI {3} \
-] [get_bd_cells axi_int_hp0]
-connect_bd_intf_net [get_bd_intf_pins axi_dma_eth0/M_AXI_SG] -boundary_type upper [get_bd_intf_pins axi_int_hp0/S00_AXI]
-connect_bd_intf_net [get_bd_intf_pins axi_dma_eth0/M_AXI_MM2S] -boundary_type upper [get_bd_intf_pins axi_int_hp0/S01_AXI]
-connect_bd_intf_net [get_bd_intf_pins axi_dma_eth0/M_AXI_S2MM] -boundary_type upper [get_bd_intf_pins axi_int_hp0/S02_AXI]
-connect_bd_net [get_bd_pins zynq_ultra_ps_e_0/pl_clk0] [get_bd_pins axi_int_hp0/ACLK]
-connect_bd_net [get_bd_pins zynq_ultra_ps_e_0/pl_clk0] [get_bd_pins axi_int_hp0/S00_ACLK]
-connect_bd_net [get_bd_pins zynq_ultra_ps_e_0/pl_clk0] [get_bd_pins axi_int_hp0/M00_ACLK]
-connect_bd_net [get_bd_pins rst_ps_100m/interconnect_aresetn] [get_bd_pins axi_int_hp0/ARESETN]
-connect_bd_net [get_bd_pins rst_ps_100m/peripheral_aresetn] [get_bd_pins axi_int_hp0/S00_ARESETN]
-connect_bd_net [get_bd_pins rst_ps_100m/peripheral_aresetn] [get_bd_pins axi_int_hp0/M00_ARESETN]
-connect_bd_intf_net -boundary_type upper [get_bd_intf_pins axi_int_hp0/M00_AXI] [get_bd_intf_pins zynq_ultra_ps_e_0/S_AXI_HP0_FPD]
-connect_bd_net [get_bd_pins xxv_ethernet_0/tx_clk_out_0] [get_bd_pins axi_int_hp0/S01_ACLK]
-connect_bd_net [get_bd_pins xxv_ethernet_0/rx_clk_out_0] [get_bd_pins axi_int_hp0/S02_ACLK]
-
-# MAC TX reset
-create_bd_cell -type ip -vlnv xilinx.com:ip:util_vector_logic logic_tx_rst_eth0
-set_property -dict [list CONFIG.C_OPERATION {not} CONFIG.C_SIZE {1} ] [get_bd_cells logic_tx_rst_eth0]
-connect_bd_net [get_bd_pins xxv_ethernet_0/user_tx_reset_0] [get_bd_pins logic_tx_rst_eth0/Op1]
-connect_bd_net [get_bd_pins logic_tx_rst_eth0/Res] [get_bd_pins axi_int_hp0/S01_ARESETN]
-
-# MAC RX reset
-create_bd_cell -type ip -vlnv xilinx.com:ip:util_vector_logic logic_rx_rst_eth0
-set_property -dict [list CONFIG.C_OPERATION {not} CONFIG.C_SIZE {1} ] [get_bd_cells logic_rx_rst_eth0]
-connect_bd_net [get_bd_pins xxv_ethernet_0/user_rx_reset_0] [get_bd_pins logic_rx_rst_eth0/Op1]
-connect_bd_net [get_bd_pins logic_rx_rst_eth0/Res] [get_bd_pins axi_int_hp0/S02_ARESETN]
-
-# TX AXI4-Stream Data FIFO
-create_bd_cell -type ip -vlnv xilinx.com:ip:axis_data_fifo tx_data_fifo_eth0
-set_property -dict [list CONFIG.HAS_TKEEP.VALUE_SRC USER CONFIG.TDATA_NUM_BYTES.VALUE_SRC USER CONFIG.HAS_TLAST.VALUE_SRC USER] [get_bd_cells tx_data_fifo_eth0]
-set_property -dict [list \
-  CONFIG.FIFO_DEPTH {32768} \
-  CONFIG.HAS_RD_DATA_COUNT {1} \
-  CONFIG.HAS_TKEEP {1} \
-  CONFIG.HAS_TLAST {1} \
-  CONFIG.HAS_WR_DATA_COUNT {1} \
-  CONFIG.TDATA_NUM_BYTES {8} \
-  CONFIG.FIFO_MODE {2} \
-] [get_bd_cells tx_data_fifo_eth0]
-connect_bd_intf_net [get_bd_intf_pins axi_dma_eth0/M_AXIS_MM2S] [get_bd_intf_pins tx_data_fifo_eth0/S_AXIS]
-connect_bd_net [get_bd_pins logic_tx_rst_eth0/Res] [get_bd_pins tx_data_fifo_eth0/s_axis_aresetn]
-connect_bd_net [get_bd_pins xxv_ethernet_0/tx_clk_out_0] [get_bd_pins tx_data_fifo_eth0/s_axis_aclk]
-connect_bd_intf_net [get_bd_intf_pins tx_data_fifo_eth0/M_AXIS] [get_bd_intf_pins xxv_ethernet_0/axis_tx_0]
-
-# RX AXI4-Stream Data FIFO
-create_bd_cell -type ip -vlnv xilinx.com:ip:axis_data_fifo rx_data_fifo_eth0
-set_property -dict [list CONFIG.HAS_TKEEP.VALUE_SRC USER CONFIG.TDATA_NUM_BYTES.VALUE_SRC USER CONFIG.HAS_TLAST.VALUE_SRC USER] [get_bd_cells tx_data_fifo_eth0]
-set_property -dict [list \
-  CONFIG.FIFO_DEPTH {32768} \
-  CONFIG.FIFO_MODE {2} \
-  CONFIG.HAS_RD_DATA_COUNT {1} \
-  CONFIG.HAS_TKEEP {1} \
-  CONFIG.HAS_WR_DATA_COUNT {1} \
-  CONFIG.TDATA_NUM_BYTES {8} \
-  CONFIG.TUSER_WIDTH {1} \
-] [get_bd_cells rx_data_fifo_eth0]
-connect_bd_intf_net [get_bd_intf_pins xxv_ethernet_0/axis_rx_0] [get_bd_intf_pins rx_data_fifo_eth0/S_AXIS]
-connect_bd_net [get_bd_pins logic_rx_rst_eth0/Res] [get_bd_pins rx_data_fifo_eth0/s_axis_aresetn]
-connect_bd_net [get_bd_pins xxv_ethernet_0/rx_clk_out_0] [get_bd_pins rx_data_fifo_eth0/s_axis_aclk]
-connect_bd_intf_net [get_bd_intf_pins rx_data_fifo_eth0/M_AXIS] [get_bd_intf_pins axi_dma_eth0/S_AXIS_S2MM]
+# Add GT ref clock port
+create_bd_intf_port -mode Slave -vlnv xilinx.com:interface:diff_clock_rtl:1.0 gt_ref_clk
+set_property CONFIG.FREQ_HZ 156250000 [get_bd_intf_ports /gt_ref_clk]
+connect_bd_intf_net [get_bd_intf_pins xxv_ethernet_0/gt_ref_clk] [get_bd_intf_ports gt_ref_clk]
 
 #########################################################
 # PL I2C
@@ -253,6 +156,10 @@ connect_bd_intf_net [get_bd_intf_ports i2c] [get_bd_intf_pins axi_iic_0/IIC]
 # SFP ports
 #########################################################
 #
+# This procedure creates a hierarchical block that contains
+# the AXI DMA, the TX/RX FIFOs and the SFP I/O logic for a
+# single SFP slot.
+# 
 # User LED configuration:
 # -------------------------------------------------------
 #
@@ -290,6 +197,140 @@ proc create_sfp_port {label} {
   create_bd_pin -dir I rx_los
   create_bd_pin -dir O grn_led
   create_bd_pin -dir O red_led
+  create_bd_pin -dir O dma_mm2s_introut
+  create_bd_pin -dir O dma_s2mm_introut
+  create_bd_pin -dir I pl_clk
+  create_bd_pin -dir I pl_periph_rstn
+  create_bd_pin -dir I pl_intercon_rstn
+  create_bd_pin -dir I tx_clk_out
+  create_bd_pin -dir I rx_clk_out
+  create_bd_pin -dir O tx_reset
+  create_bd_pin -dir O rx_reset
+  create_bd_pin -dir I user_tx_reset
+  create_bd_pin -dir I user_rx_reset
+
+  # Create interfaces for this block
+  create_bd_intf_pin -mode Slave -vlnv xilinx.com:interface:aximm_rtl:1.0 S_AXI_LITE
+  create_bd_intf_pin -mode Master -vlnv xilinx.com:interface:aximm_rtl:1.0 m_axi_mm
+  create_bd_intf_pin -mode Master -vlnv xilinx.com:interface:axis_rtl:1.0 axis_tx
+  create_bd_intf_pin -mode Slave -vlnv xilinx.com:interface:axis_rtl:1.0 axis_rx
+
+  #########################################################
+  # AXI DMA
+  #########################################################
+
+  create_bd_cell -type ip -vlnv xilinx.com:ip:axi_dma axi_dma
+
+  set_property -dict [list CONFIG.c_s_axis_s2mm_tdata_width.VALUE_SRC USER CONFIG.c_m_axi_s2mm_data_width.VALUE_SRC USER] [get_bd_cells axi_dma]
+  set_property -dict [list \
+    CONFIG.c_include_sg {1} \
+    CONFIG.c_m_axi_mm2s_data_width {64} \
+    CONFIG.c_m_axis_mm2s_tdata_width {64} \
+    CONFIG.c_mm2s_burst_size {64} \
+    CONFIG.c_sg_include_stscntrl_strm {0} \
+    CONFIG.c_sg_length_width {16} \
+    CONFIG.c_include_mm2s_dre {1} \
+    CONFIG.c_include_s2mm_dre {1} \
+    CONFIG.c_m_axi_s2mm_data_width {64} \
+    CONFIG.c_s_axis_s2mm_tdata_width {64} \
+  ] [get_bd_cells axi_dma]
+
+  # Clocks
+  connect_bd_net [get_bd_pins pl_clk] [get_bd_pins axi_dma/s_axi_lite_aclk]
+  connect_bd_net [get_bd_pins pl_clk] [get_bd_pins axi_dma/m_axi_sg_aclk]
+  connect_bd_net [get_bd_pins tx_clk_out] [get_bd_pins axi_dma/m_axi_mm2s_aclk]
+  connect_bd_net [get_bd_pins rx_clk_out] [get_bd_pins axi_dma/m_axi_s2mm_aclk]
+
+  # Resets
+  connect_bd_net [get_bd_pins pl_periph_rstn] [get_bd_pins axi_dma/axi_resetn]
+
+  # Interrupts
+  connect_bd_net [get_bd_pins axi_dma/mm2s_introut] [get_bd_pins dma_mm2s_introut]
+  connect_bd_net [get_bd_pins axi_dma/s2mm_introut] [get_bd_pins dma_s2mm_introut]
+
+  # AXI Lite interface
+  connect_bd_intf_net -boundary_type upper [get_bd_intf_pins axi_dma/S_AXI_LITE] [get_bd_intf_pins S_AXI_LITE]
+
+  # DMA TX reset
+  create_bd_cell -type ip -vlnv xilinx.com:ip:util_vector_logic logic_dma_tx_rst
+  set_property -dict [list CONFIG.C_OPERATION {not} CONFIG.C_SIZE {1} ] [get_bd_cells logic_dma_tx_rst]
+  connect_bd_net [get_bd_pins axi_dma/mm2s_prmry_reset_out_n] [get_bd_pins logic_dma_tx_rst/Op1]
+  connect_bd_net [get_bd_pins logic_dma_tx_rst/Res] [get_bd_pins tx_reset]
+
+  # DMA RX reset
+  create_bd_cell -type ip -vlnv xilinx.com:ip:util_vector_logic logic_dma_rx_rst
+  set_property -dict [list CONFIG.C_OPERATION {not} CONFIG.C_SIZE {1} ] [get_bd_cells logic_dma_rx_rst]
+  connect_bd_net [get_bd_pins axi_dma/s2mm_prmry_reset_out_n] [get_bd_pins logic_dma_rx_rst/Op1]
+  connect_bd_net [get_bd_pins logic_dma_rx_rst/Res] [get_bd_pins rx_reset]
+
+  # AXI Interconnect for HPx interface
+  create_bd_cell -type ip -vlnv xilinx.com:ip:axi_interconnect axi_int_hp
+  set_property -dict [list \
+    CONFIG.NUM_MI {1} \
+    CONFIG.NUM_SI {3} \
+  ] [get_bd_cells axi_int_hp]
+  connect_bd_intf_net [get_bd_intf_pins axi_dma/M_AXI_SG] -boundary_type upper [get_bd_intf_pins axi_int_hp/S00_AXI]
+  connect_bd_intf_net [get_bd_intf_pins axi_dma/M_AXI_MM2S] -boundary_type upper [get_bd_intf_pins axi_int_hp/S01_AXI]
+  connect_bd_intf_net [get_bd_intf_pins axi_dma/M_AXI_S2MM] -boundary_type upper [get_bd_intf_pins axi_int_hp/S02_AXI]
+  connect_bd_net [get_bd_pins pl_clk] [get_bd_pins axi_int_hp/ACLK]
+  connect_bd_net [get_bd_pins pl_clk] [get_bd_pins axi_int_hp/S00_ACLK]
+  connect_bd_net [get_bd_pins pl_clk] [get_bd_pins axi_int_hp/M00_ACLK]
+  connect_bd_net [get_bd_pins pl_intercon_rstn] [get_bd_pins axi_int_hp/ARESETN]
+  connect_bd_net [get_bd_pins pl_periph_rstn] [get_bd_pins axi_int_hp/S00_ARESETN]
+  connect_bd_net [get_bd_pins pl_periph_rstn] [get_bd_pins axi_int_hp/M00_ARESETN]
+  connect_bd_intf_net -boundary_type upper [get_bd_intf_pins axi_int_hp/M00_AXI] [get_bd_intf_pins m_axi_mm]
+  connect_bd_net [get_bd_pins tx_clk_out] [get_bd_pins axi_int_hp/S01_ACLK]
+  connect_bd_net [get_bd_pins rx_clk_out] [get_bd_pins axi_int_hp/S02_ACLK]
+
+  # MAC TX reset
+  create_bd_cell -type ip -vlnv xilinx.com:ip:util_vector_logic logic_tx_rst
+  set_property -dict [list CONFIG.C_OPERATION {not} CONFIG.C_SIZE {1} ] [get_bd_cells logic_tx_rst]
+  connect_bd_net [get_bd_pins user_tx_reset] [get_bd_pins logic_tx_rst/Op1]
+  connect_bd_net [get_bd_pins logic_tx_rst/Res] [get_bd_pins axi_int_hp/S01_ARESETN]
+
+  # MAC RX reset
+  create_bd_cell -type ip -vlnv xilinx.com:ip:util_vector_logic logic_rx_rst
+  set_property -dict [list CONFIG.C_OPERATION {not} CONFIG.C_SIZE {1} ] [get_bd_cells logic_rx_rst]
+  connect_bd_net [get_bd_pins user_rx_reset] [get_bd_pins logic_rx_rst/Op1]
+  connect_bd_net [get_bd_pins logic_rx_rst/Res] [get_bd_pins axi_int_hp/S02_ARESETN]
+
+  # TX AXI4-Stream Data FIFO
+  create_bd_cell -type ip -vlnv xilinx.com:ip:axis_data_fifo tx_data_fifo
+  set_property -dict [list CONFIG.HAS_TKEEP.VALUE_SRC USER CONFIG.TDATA_NUM_BYTES.VALUE_SRC USER CONFIG.HAS_TLAST.VALUE_SRC USER] [get_bd_cells tx_data_fifo]
+  set_property -dict [list \
+    CONFIG.FIFO_DEPTH {16384} \
+    CONFIG.HAS_RD_DATA_COUNT {1} \
+    CONFIG.HAS_TKEEP {1} \
+    CONFIG.HAS_TLAST {1} \
+    CONFIG.HAS_WR_DATA_COUNT {1} \
+    CONFIG.TDATA_NUM_BYTES {8} \
+    CONFIG.FIFO_MODE {2} \
+  ] [get_bd_cells tx_data_fifo]
+  connect_bd_intf_net [get_bd_intf_pins axi_dma/M_AXIS_MM2S] [get_bd_intf_pins tx_data_fifo/S_AXIS]
+  connect_bd_net [get_bd_pins logic_tx_rst/Res] [get_bd_pins tx_data_fifo/s_axis_aresetn]
+  connect_bd_net [get_bd_pins tx_clk_out] [get_bd_pins tx_data_fifo/s_axis_aclk]
+  connect_bd_intf_net [get_bd_intf_pins tx_data_fifo/M_AXIS] [get_bd_intf_pins axis_tx]
+
+  # RX AXI4-Stream Data FIFO
+  create_bd_cell -type ip -vlnv xilinx.com:ip:axis_data_fifo rx_data_fifo
+  set_property -dict [list CONFIG.HAS_TKEEP.VALUE_SRC USER CONFIG.TDATA_NUM_BYTES.VALUE_SRC USER CONFIG.HAS_TLAST.VALUE_SRC USER] [get_bd_cells rx_data_fifo]
+  set_property -dict [list \
+    CONFIG.FIFO_DEPTH {16384} \
+    CONFIG.FIFO_MODE {2} \
+    CONFIG.HAS_RD_DATA_COUNT {1} \
+    CONFIG.HAS_TKEEP {1} \
+    CONFIG.HAS_WR_DATA_COUNT {1} \
+    CONFIG.TDATA_NUM_BYTES {8} \
+    CONFIG.TUSER_WIDTH {1} \
+  ] [get_bd_cells rx_data_fifo]
+  connect_bd_intf_net [get_bd_intf_pins axis_rx] [get_bd_intf_pins rx_data_fifo/S_AXIS]
+  connect_bd_net [get_bd_pins logic_rx_rst/Res] [get_bd_pins rx_data_fifo/s_axis_aresetn]
+  connect_bd_net [get_bd_pins rx_clk_out] [get_bd_pins rx_data_fifo/s_axis_aclk]
+  connect_bd_intf_net [get_bd_intf_pins rx_data_fifo/M_AXIS] [get_bd_intf_pins axi_dma/S_AXIS_S2MM]
+  
+  #########################################################
+  # SFP I/O
+  #########################################################
 
   # Create constants HIGH and LOW for the SFP I/Os
   set const_high [ create_bd_cell -type ip -vlnv xilinx.com:ip:xlconstant const_high ]
@@ -326,6 +367,12 @@ proc create_sfp_port {label} {
 
   # Restore current instance
   current_bd_instance \
+}
+
+# Create each port
+foreach label {0 1 2 3} {
+  # Create the SFP port block
+  create_sfp_port $label
 
   # Create external ports
   create_bd_port -dir O tx_disable_sfp$label
@@ -345,12 +392,29 @@ proc create_sfp_port {label} {
   connect_bd_net [get_bd_pins sfp_port$label/grn_led] [get_bd_ports grn_led_sfp$label]
   connect_bd_net [get_bd_pins sfp_port$label/red_led] [get_bd_ports red_led_sfp$label]
 
-}
+  # Connect other block pins and interfaces
+  connect_bd_net [get_bd_pins zynq_ultra_ps_e_0/pl_clk0] [get_bd_pins sfp_port$label/pl_clk]
+  connect_bd_net [get_bd_pins rst_ps_100m/interconnect_aresetn] [get_bd_pins sfp_port$label/pl_intercon_rstn]
+  connect_bd_net [get_bd_pins rst_ps_100m/peripheral_aresetn] [get_bd_pins sfp_port$label/pl_periph_rstn]
+  connect_bd_intf_net -boundary_type upper [get_bd_intf_pins sfp_port$label/m_axi_mm] [get_bd_intf_pins zynq_ultra_ps_e_0/S_AXI_HP${label}_FPD]
+  connect_bd_net [get_bd_pins xxv_ethernet_0/tx_clk_out_$label] [get_bd_pins sfp_port$label/tx_clk_out]
+  connect_bd_net [get_bd_pins xxv_ethernet_0/rx_clk_out_$label] [get_bd_pins sfp_port$label/rx_clk_out]
+  connect_bd_net [get_bd_pins xxv_ethernet_0/user_tx_reset_$label] [get_bd_pins sfp_port$label/user_tx_reset]
+  connect_bd_net [get_bd_pins xxv_ethernet_0/user_rx_reset_$label] [get_bd_pins sfp_port$label/user_rx_reset]
+  connect_bd_net [get_bd_pins sfp_port$label/tx_reset] [get_bd_pins xxv_ethernet_0/tx_reset_$label]
+  connect_bd_net [get_bd_pins sfp_port$label/rx_reset] [get_bd_pins xxv_ethernet_0/rx_reset_$label]
+  connect_bd_intf_net [get_bd_intf_pins sfp_port$label/axis_tx] [get_bd_intf_pins xxv_ethernet_0/axis_tx_$label]
+  connect_bd_intf_net [get_bd_intf_pins xxv_ethernet_0/axis_rx_$label] [get_bd_intf_pins sfp_port$label/axis_rx]
 
+  # Connect the clock for the HPx interface
+  connect_bd_net [get_bd_pins zynq_ultra_ps_e_0/pl_clk0] [get_bd_pins zynq_ultra_ps_e_0/saxihp${label}_fpd_aclk]
 
-# Create each port
-foreach label {0 1 2 3} {
-  create_sfp_port $label
+  # AXI LITE interface
+  lappend hpm0_lpd_ports [list "sfp_port$label/S_AXI_LITE" "zynq_ultra_ps_e_0/pl_clk0" "rst_ps_100m/peripheral_aresetn"]
+
+  # Interrupts
+  lappend priority_intr_list "sfp_port$label/dma_mm2s_introut"
+  lappend priority_intr_list "sfp_port$label/dma_s2mm_introut"
 }
 
 
@@ -393,15 +457,23 @@ create_axi_ic "ps_axi_periph" "zynq_ultra_ps_e_0/pl_clk0" "rst_ps_100m" \
 # PL-to-PS interrupts
 #########################################################
 
-# Connect the interrupts (direct to PL-PS interrupt) to pl_ps_irq0
-set p_intr_concat [create_bd_cell -type ip -vlnv xilinx.com:ip:xlconcat p_intr_concat]
-connect_bd_net [get_bd_pins p_intr_concat/dout] [get_bd_pins zynq_ultra_ps_e_0/pl_ps_irq0]
+# Connect the interrupts (direct to PL-PS interrupt) to pl_ps_irq0 and pl_ps_irq1
+# NOTE: The interrupt list must not have more than 16 interrupts
+set p_intr_concat [create_bd_cell -type ip -vlnv xilinx.com:ip:xlconcat p_intr_concat0]
+connect_bd_net [get_bd_pins ${p_intr_concat}/dout] [get_bd_pins zynq_ultra_ps_e_0/pl_ps_irq0]
 set_property -dict [list CONFIG.NUM_PORTS 8] $p_intr_concat
 set n_interrupts [llength $priority_intr_list]
 set intr_index 0
 foreach intr $priority_intr_list {
   connect_bd_net [get_bd_pins $intr] [get_bd_pins ${p_intr_concat}/In$intr_index]
   set intr_index [expr {$intr_index+1}]
+  if { $intr_index == 8 } {
+    set_property CONFIG.PSU__USE__IRQ1 {1} [get_bd_cells zynq_ultra_ps_e_0]
+    set p_intr_concat [create_bd_cell -type ip -vlnv xilinx.com:ip:xlconcat p_intr_concat1]
+    connect_bd_net [get_bd_pins ${p_intr_concat}/dout] [get_bd_pins zynq_ultra_ps_e_0/pl_ps_irq1]
+    set_property -dict [list CONFIG.NUM_PORTS 8] $p_intr_concat
+    set intr_index 0
+  }
 }
 
 # Assign addresses
