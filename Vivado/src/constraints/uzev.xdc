@@ -9,7 +9,11 @@ set_property IOSTANDARD LVCMOS18 [get_ports i2c_*]
 set_property SLEW SLOW [get_ports i2c_*]
 set_property DRIVE 4 [get_ports i2c_*]
 
+#####################
 # GT reference clock
+#####################
+
+# GT ref clock from the Quad FMC28 FMC Si5328
 set_property PACKAGE_PIN L8 [get_ports gt_ref_clk_clk_p]; # GBTCLK0_M2C_P
 
 #############

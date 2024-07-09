@@ -89,7 +89,7 @@ set_property -dict [list \
 # Clocks
 connect_bd_net [get_bd_pins zynq_ultra_ps_e_0/pl_clk0] [get_bd_pins xxv_ethernet_0/dclk]
 
-foreach label {0 1 2 3} {
+foreach label $ports {
   lappend hpm0_lpd_ports [list "xxv_ethernet_0/s_axi_$label" "zynq_ultra_ps_e_0/pl_clk0" "rst_ps_100m/peripheral_aresetn"]
 
   # Clocks
@@ -102,7 +102,7 @@ connect_bd_net [get_bd_pins rst_ps_100m/peripheral_reset] [get_bd_pins xxv_ether
 create_bd_cell -type ip -vlnv xilinx.com:ip:util_vector_logic logic_not
 set_property -dict [list CONFIG.C_OPERATION {not} CONFIG.C_SIZE {1} ] [get_bd_cells logic_not]
 connect_bd_net [get_bd_pins zynq_ultra_ps_e_0/pl_resetn0] [get_bd_pins logic_not/Op1]
-foreach label {0 1 2 3} {
+foreach label $ports {
   connect_bd_net [get_bd_pins rst_ps_100m/peripheral_aresetn] [get_bd_pins xxv_ethernet_0/s_axi_aresetn_$label]
   connect_bd_net [get_bd_pins logic_not/Res] [get_bd_pins xxv_ethernet_0/gtwiz_reset_tx_datapath_$label]
   connect_bd_net [get_bd_pins logic_not/Res] [get_bd_pins xxv_ethernet_0/gtwiz_reset_rx_datapath_$label]
@@ -111,7 +111,7 @@ foreach label {0 1 2 3} {
 # Constants for 10G/25G Ethernet core
 set const_low [ create_bd_cell -type ip -vlnv xilinx.com:ip:xlconstant const_low ]
 set_property CONFIG.CONST_VAL {0} [get_bd_cells const_low]
-foreach label {0 1 2 3} {
+foreach label $ports {
   connect_bd_net [get_bd_pins const_low/dout] [get_bd_pins xxv_ethernet_0/ctl_tx_send_idle_$label]
   connect_bd_net [get_bd_pins const_low/dout] [get_bd_pins xxv_ethernet_0/ctl_tx_send_lfi_$label]
   connect_bd_net [get_bd_pins const_low/dout] [get_bd_pins xxv_ethernet_0/ctl_tx_send_rfi_$label]
@@ -119,14 +119,14 @@ foreach label {0 1 2 3} {
 
 set const_clksel [ create_bd_cell -type ip -vlnv xilinx.com:ip:xlconstant const_clksel ]
 set_property -dict [list CONFIG.CONST_VAL {5} CONFIG.CONST_WIDTH {3} ] [get_bd_cells const_clksel]
-foreach label {0 1 2 3} {
+foreach label $ports {
   connect_bd_net [get_bd_pins const_clksel/dout] [get_bd_pins xxv_ethernet_0/txoutclksel_in_$label]
   connect_bd_net [get_bd_pins const_clksel/dout] [get_bd_pins xxv_ethernet_0/rxoutclksel_in_$label]
 }
 
 set const_preamble [ create_bd_cell -type ip -vlnv xilinx.com:ip:xlconstant const_preamble ]
 set_property -dict [list CONFIG.CONST_VAL {0} CONFIG.CONST_WIDTH {56} ] [get_bd_cells const_preamble]
-foreach label {0 1 2 3} {
+foreach label $ports {
   connect_bd_net [get_bd_pins const_preamble/dout] [get_bd_pins xxv_ethernet_0/tx_preamblein_$label]
 }
 
@@ -163,12 +163,12 @@ connect_bd_intf_net [get_bd_intf_ports i2c] [get_bd_intf_pins axi_iic_0/IIC]
 # User LED configuration:
 # -------------------------------------------------------
 #
+# TX_FAULT --X
 #               -----
 # /MOD_ABS --->|     |
 #              | AND |----> GREEN LED
 #  /RX_LOS --->|     |
 #               -----
-#
 #               -----
 # /MOD_ABS --->|     |
 #              | AND |----> RED LED
@@ -181,6 +181,7 @@ connect_bd_intf_net [get_bd_intf_ports i2c] [get_bd_intf_pins axi_iic_0/IIC]
 #   * Both LEDs are OFF when no SFP module is present
 #   * Green LED ON when SFP module present and no loss of signal
 #   * Red LED ON when SFP module present and loss of signal
+#   * TX_FAULT signals are not connected (not used)
 #
 
 proc create_sfp_port {label} {
@@ -195,6 +196,7 @@ proc create_sfp_port {label} {
   create_bd_pin -dir O rate_sel1
   create_bd_pin -dir I mod_abs
   create_bd_pin -dir I rx_los
+  create_bd_pin -dir I tx_fault
   create_bd_pin -dir O grn_led
   create_bd_pin -dir O red_led
   create_bd_pin -dir O dma_mm2s_introut
@@ -370,7 +372,7 @@ proc create_sfp_port {label} {
 }
 
 # Create each port
-foreach label {0 1 2 3} {
+foreach label $ports {
   # Create the SFP port block
   create_sfp_port $label
 
@@ -380,6 +382,7 @@ foreach label {0 1 2 3} {
   create_bd_port -dir O rate_sel1_sfp$label
   create_bd_port -dir I mod_abs_sfp$label
   create_bd_port -dir I rx_los_sfp$label
+  create_bd_port -dir I tx_fault_sfp$label
   create_bd_port -dir O grn_led_sfp$label
   create_bd_port -dir O red_led_sfp$label
 
@@ -389,6 +392,7 @@ foreach label {0 1 2 3} {
   connect_bd_net [get_bd_pins sfp_port$label/rate_sel1] [get_bd_ports rate_sel1_sfp$label]
   connect_bd_net [get_bd_pins sfp_port$label/mod_abs] [get_bd_ports mod_abs_sfp$label]
   connect_bd_net [get_bd_pins sfp_port$label/rx_los] [get_bd_ports rx_los_sfp$label]
+  connect_bd_net [get_bd_pins sfp_port$label/tx_fault] [get_bd_ports tx_fault_sfp$label]
   connect_bd_net [get_bd_pins sfp_port$label/grn_led] [get_bd_ports grn_led_sfp$label]
   connect_bd_net [get_bd_pins sfp_port$label/red_led] [get_bd_ports red_led_sfp$label]
 

@@ -9,8 +9,16 @@ set_property IOSTANDARD LVCMOS18 [get_ports i2c_*]
 set_property SLEW SLOW [get_ports i2c_*]
 set_property DRIVE 4 [get_ports i2c_*]
 
+#####################
 # GT reference clock
-set_property PACKAGE_PIN AK38 [get_ports gt_ref_clk_clk_p]; # GBTCLK0_M2C_P
+#####################
+
+# Using VCU118 Si570 (U32) clock oscillator for GT ref clock
+# The device defaults to an output of 156.25MHz, the same frequency required by the ref design
+set_property PACKAGE_PIN AJ9 [get_ports gt_ref_clk_clk_p]; # MGT_SI570_CLOCK1_C_P
+
+# GT ref clock from the Quad FMC28 FMC Si5328 (uncomment to use it instead of the above)
+# set_property PACKAGE_PIN AK38 [get_ports gt_ref_clk_clk_p]; # GBTCLK0_M2C_P
 
 #############
 # SFP SLOT 0

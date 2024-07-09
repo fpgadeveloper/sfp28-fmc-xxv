@@ -34,23 +34,21 @@ if {![string equal $ver $version_required]} {
 set_param board.repoPaths [get_property LOCAL_ROOT_DIR [xhub::get_xstores xilinx_board_store]]
 
 # Possible targets
-dict set target_dict kc705_hpc { xilinx.com kc705 mb }
-dict set target_dict kcu105_hpc { xilinx.com kcu105 mb }
-dict set target_dict uzev { avnet.com ultrazed_7ev_cc zynqmp }
-dict set target_dict vc707_hpc1 { xilinx.com vc707 mb }
-dict set target_dict vc707_hpc2 { xilinx.com vc707 mb }
-dict set target_dict vc709_hpc { xilinx.com vc709 mb }
-dict set target_dict vck190_fmcp1 { xilinx.com vck190 versal }
-dict set target_dict vck190_fmcp2 { xilinx.com vck190 versal }
-dict set target_dict vmk180_fmcp1 { xilinx.com vmk180 versal }
-dict set target_dict vmk180_fmcp2 { xilinx.com vmk180 versal }
-dict set target_dict vcu118 { xilinx.com vcu118 mb }
-dict set target_dict zc706_hpc { xilinx.com zc706 zynq }
-dict set target_dict zcu102_hpc0 { xilinx.com zcu102 zynqmp }
-dict set target_dict zcu102_hpc1 { xilinx.com zcu102 zynqmp }
-dict set target_dict zcu106_hpc0 { xilinx.com zcu106 zynqmp }
-dict set target_dict zcu111 { xilinx.com zcu111 zynqmp }
-dict set target_dict zcu208 { xilinx.com zcu208 zynqmp }
+dict set target_dict kcu105_hpc { xilinx.com kcu105 mb {0 1 2 3} }
+dict set target_dict uzev { avnet.com ultrazed_7ev_cc zynqmp {0 1 2 3} }
+dict set target_dict vck190_fmcp1 { xilinx.com vck190 versal {0 1 2 3} }
+dict set target_dict vck190_fmcp2 { xilinx.com vck190 versal {0 1 2 3} }
+dict set target_dict vek280 { xilinx.com vek280 versal {0 1 2 3} }
+dict set target_dict vmk180_fmcp1 { xilinx.com vmk180 versal {0 1 2 3} }
+dict set target_dict vmk180_fmcp2 { xilinx.com vmk180 versal {0 1 2 3} }
+dict set target_dict vpk120 { xilinx.com vpk120 versal {0 1 2 3} }
+dict set target_dict vcu118 { xilinx.com vcu118 mb {0 1 2 3} }
+dict set target_dict zcu102_hpc0 { xilinx.com zcu102 zynqmp {0 1 2 3} }
+dict set target_dict zcu102_hpc1 { xilinx.com zcu102 zynqmp {0 1 2 3} }
+dict set target_dict zcu104 { xilinx.com zcu104 zynqmp {0} }
+dict set target_dict zcu106_hpc0 { xilinx.com zcu106 zynqmp {0 1 2 3} }
+dict set target_dict zcu111 { xilinx.com zcu111 zynqmp {0 1 2 3} }
+dict set target_dict zcu208 { xilinx.com zcu208 zynqmp {0 1 2 3} }
 
 # Function to display the options and get user input
 proc selectTarget {target_dict} {
@@ -134,6 +132,7 @@ if { $proj_board == "" } {
 
 set fpga_part [get_property PART_NAME [get_board_parts $proj_board]]
 set bd_script [lindex [dict get $target_dict $target] 2]
+set ports [lindex [dict get $target_dict $target] 3]
 
 # Set the reference directory for source file relative paths (by default the value is script directory path)
 set origin_dir "."

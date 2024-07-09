@@ -9,10 +9,16 @@ set_property IOSTANDARD LVCMOS18 [get_ports i2c_*]
 set_property SLEW SLOW [get_ports i2c_*]
 set_property DRIVE 4 [get_ports i2c_*]
 
+#####################
 # GT reference clock
-# TEMP: Using ZCU106 Si570 clock oscillator (USER_MGT_SI570_CLOCK2_C_P) for GT ref clock
-#       Should be changed to FMC's Si5328 sourced clock once we have enabled and validated it.
-set_property PACKAGE_PIN U10 [get_ports gt_ref_clk_clk_p]; # GBTCLK0_M2C_P
+#####################
+
+# Using ZCU106 Si570 clock oscillator (USER_MGT_SI570_CLOCK2_C_P) for GT ref clock
+# The device defaults to an output of 156.25MHz, the same frequency required by the ref design
+set_property PACKAGE_PIN U10 [get_ports gt_ref_clk_clk_p]; # USER_MGT_SI570_CLOCK2_C_P
+
+# GT ref clock from the Quad FMC28 FMC Si5328 (uncomment to use it instead of the above)
+# set_property PACKAGE_PIN V8 [get_ports gt_ref_clk_clk_p]; # GBTCLK0_M2C_P
 
 #############
 # SFP SLOT 0
