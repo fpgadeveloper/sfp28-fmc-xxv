@@ -53,6 +53,21 @@ set hpm0_lpd_ports {}
 set intr_list {}
 set priority_intr_list {}
 
+# Number of ports
+set n_ports [llength $ports]
+
+# Initialize the list of unused ports
+set unused_ports {}
+
+# Work out which ports of the Quad SFP28 FMC are not used in this design
+foreach port {0 1 2 3} {
+    # Check if the current port is not in the ports list
+    if { [lsearch -exact $ports $port] == -1 } {
+        # Add the port to the unused_ports list
+        lappend unused_ports $port
+    }
+}
+
 # Add the Processor System and apply board preset
 create_bd_cell -type ip -vlnv xilinx.com:ip:zynq_ultra_ps_e zynq_ultra_ps_e_0
 apply_bd_automation -rule xilinx.com:bd_rule:zynq_ultra_ps_e -config {apply_board_preset "1" }  [get_bd_cells zynq_ultra_ps_e_0]
@@ -60,9 +75,9 @@ apply_bd_automation -rule xilinx.com:bd_rule:zynq_ultra_ps_e -config {apply_boar
 # Configure the PS: Enable HP0-3 for SFP slots 0-4
 # SFP0 to HP0 (S_AXI_GP2), SFP1 to HP1 (S_AXI_GP3), SFP2 to HP2 (S_AXI_GP4), SFP3 to HP3 (S_AXI_GP5)
 set_property -dict [list CONFIG.PSU__USE__S_AXI_GP2 {1} \
-CONFIG.PSU__USE__S_AXI_GP3 {1} \
-CONFIG.PSU__USE__S_AXI_GP4 {1} \
-CONFIG.PSU__USE__S_AXI_GP5 {1} \
+CONFIG.PSU__USE__S_AXI_GP3 {0} \
+CONFIG.PSU__USE__S_AXI_GP4 {0} \
+CONFIG.PSU__USE__S_AXI_GP5 {0} \
 CONFIG.PSU__USE__M_AXI_GP0 {0} \
 CONFIG.PSU__USE__M_AXI_GP1 {0} \
 CONFIG.PSU__USE__M_AXI_GP2 {1} \
@@ -81,7 +96,7 @@ connect_bd_net [get_bd_pins zynq_ultra_ps_e_0/pl_resetn0] [get_bd_pins rst_ps_10
 # Add the 10G/25G Ethernet
 create_bd_cell -type ip -vlnv xilinx.com:ip:xxv_ethernet xxv_ethernet_0
 set_property -dict [list \
-  CONFIG.NUM_OF_CORES {4} \
+  CONFIG.NUM_OF_CORES $n_ports \
   CONFIG.BASE_R_KR {BASE-R} \
   CONFIG.GT_REF_CLK_FREQ {156.25} \
   ] [get_bd_cells xxv_ethernet_0]
@@ -371,8 +386,19 @@ proc create_sfp_port {label} {
   current_bd_instance \
 }
 
-# Create each port
+# Create each SFP port
+set hp_index 0
+set hp_ports {S_AXI_HP0_FPD S_AXI_HP1_FPD S_AXI_HP2_FPD S_AXI_HP3_FPD}
+set hp_configs {CONFIG.PSU__USE__S_AXI_GP2 CONFIG.PSU__USE__S_AXI_GP3 CONFIG.PSU__USE__S_AXI_GP4 CONFIG.PSU__USE__S_AXI_GP5}
+set hp_clks {saxihp0_fpd_aclk saxihp1_fpd_aclk saxihp2_fpd_aclk saxihp3_fpd_aclk }
 foreach label $ports {
+  # Enable the HP port for this SFP port
+  set hp_port [lindex $hp_ports $hp_index]
+  set hp_config [lindex $hp_configs $hp_index]
+  set hp_clk [lindex $hp_clks $hp_index]
+  set_property $hp_config {1} [get_bd_cells zynq_ultra_ps_e_0]
+  set hp_index [expr {$hp_index+1}]
+
   # Create the SFP port block
   create_sfp_port $label
 
@@ -400,7 +426,7 @@ foreach label $ports {
   connect_bd_net [get_bd_pins zynq_ultra_ps_e_0/pl_clk0] [get_bd_pins sfp_port$label/pl_clk]
   connect_bd_net [get_bd_pins rst_ps_100m/interconnect_aresetn] [get_bd_pins sfp_port$label/pl_intercon_rstn]
   connect_bd_net [get_bd_pins rst_ps_100m/peripheral_aresetn] [get_bd_pins sfp_port$label/pl_periph_rstn]
-  connect_bd_intf_net -boundary_type upper [get_bd_intf_pins sfp_port$label/m_axi_mm] [get_bd_intf_pins zynq_ultra_ps_e_0/S_AXI_HP${label}_FPD]
+  connect_bd_intf_net -boundary_type upper [get_bd_intf_pins sfp_port$label/m_axi_mm] [get_bd_intf_pins zynq_ultra_ps_e_0/${hp_port}]
   connect_bd_net [get_bd_pins xxv_ethernet_0/tx_clk_out_$label] [get_bd_pins sfp_port$label/tx_clk_out]
   connect_bd_net [get_bd_pins xxv_ethernet_0/rx_clk_out_$label] [get_bd_pins sfp_port$label/rx_clk_out]
   connect_bd_net [get_bd_pins xxv_ethernet_0/user_tx_reset_$label] [get_bd_pins sfp_port$label/user_tx_reset]
@@ -411,7 +437,7 @@ foreach label $ports {
   connect_bd_intf_net [get_bd_intf_pins xxv_ethernet_0/axis_rx_$label] [get_bd_intf_pins sfp_port$label/axis_rx]
 
   # Connect the clock for the HPx interface
-  connect_bd_net [get_bd_pins zynq_ultra_ps_e_0/pl_clk0] [get_bd_pins zynq_ultra_ps_e_0/saxihp${label}_fpd_aclk]
+  connect_bd_net [get_bd_pins zynq_ultra_ps_e_0/pl_clk0] [get_bd_pins zynq_ultra_ps_e_0/${hp_clk}]
 
   # AXI LITE interface
   lappend hpm0_lpd_ports [list "sfp_port$label/S_AXI_LITE" "zynq_ultra_ps_e_0/pl_clk0" "rst_ps_100m/peripheral_aresetn"]
@@ -421,6 +447,73 @@ foreach label $ports {
   lappend priority_intr_list "sfp_port$label/dma_s2mm_introut"
 }
 
+# This procedure creates a hierarchical block that contains
+# the SFP I/Os for a single *unused* SFP slot. We use this to properly
+# tie off the SFP I/Os that are not being used in the design.
+
+proc create_unused_sfp_port {label} {
+
+  # Create hierarchical block for the SFP port logic
+  set hier_obj [create_bd_cell -type hier unused_sfp_port$label]
+  current_bd_instance $hier_obj
+
+  # Create pins for this block
+  create_bd_pin -dir O tx_disable
+  create_bd_pin -dir O rate_sel0
+  create_bd_pin -dir O rate_sel1
+  create_bd_pin -dir I mod_abs
+  create_bd_pin -dir I rx_los
+  create_bd_pin -dir I tx_fault
+  create_bd_pin -dir O grn_led
+  create_bd_pin -dir O red_led
+
+  #########################################################
+  # SFP I/O
+  #########################################################
+
+  # Create constant LOW for the SFP I/Os
+  set const_low [ create_bd_cell -type ip -vlnv xilinx.com:ip:xlconstant const_low ]
+  set_property -dict [list CONFIG.CONST_VAL {0}] $const_low
+
+  # TX DISABLE - LOW
+  connect_bd_net [get_bd_pins const_low/dout] [get_bd_pins tx_disable]
+  # RATE SEL 0 - LOW
+  connect_bd_net [get_bd_pins const_low/dout] [get_bd_pins rate_sel0]
+  # RATE SEL 1 - LOW
+  connect_bd_net [get_bd_pins const_low/dout] [get_bd_pins rate_sel1]
+  # Green LED - OFF
+  connect_bd_net [get_bd_pins const_low/dout] [get_bd_pins grn_led]
+  # Red LED - OFF
+  connect_bd_net [get_bd_pins const_low/dout] [get_bd_pins red_led]
+
+  # Restore current instance
+  current_bd_instance \
+}
+
+# Correctly tie off the unused ports
+foreach label $unused_ports {
+  create_unused_sfp_port $label
+
+  # Create external ports
+  create_bd_port -dir O tx_disable_sfp$label
+  create_bd_port -dir O rate_sel0_sfp$label
+  create_bd_port -dir O rate_sel1_sfp$label
+  create_bd_port -dir I mod_abs_sfp$label
+  create_bd_port -dir I rx_los_sfp$label
+  create_bd_port -dir I tx_fault_sfp$label
+  create_bd_port -dir O grn_led_sfp$label
+  create_bd_port -dir O red_led_sfp$label
+
+  # Connect external ports to the block pins
+  connect_bd_net [get_bd_pins unused_sfp_port$label/tx_disable] [get_bd_ports tx_disable_sfp$label]
+  connect_bd_net [get_bd_pins unused_sfp_port$label/rate_sel0] [get_bd_ports rate_sel0_sfp$label]
+  connect_bd_net [get_bd_pins unused_sfp_port$label/rate_sel1] [get_bd_ports rate_sel1_sfp$label]
+  connect_bd_net [get_bd_pins unused_sfp_port$label/mod_abs] [get_bd_ports mod_abs_sfp$label]
+  connect_bd_net [get_bd_pins unused_sfp_port$label/rx_los] [get_bd_ports rx_los_sfp$label]
+  connect_bd_net [get_bd_pins unused_sfp_port$label/tx_fault] [get_bd_ports tx_fault_sfp$label]
+  connect_bd_net [get_bd_pins unused_sfp_port$label/grn_led] [get_bd_ports grn_led_sfp$label]
+  connect_bd_net [get_bd_pins unused_sfp_port$label/red_led] [get_bd_ports red_led_sfp$label]
+}
 
 #########################################################
 # AXI Interfaces and interrupts
