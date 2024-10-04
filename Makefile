@@ -17,6 +17,7 @@ uzev_target := zynqMP both
 vck190_fmcp1_target := versal both
 vck190_fmcp2_target := versal both
 vek280_target := versal both
+vek280_es_revb_target := versal both
 vmk180_fmcp1_target := versal both
 vmk180_fmcp2_target := versal both
 vpk120_target := versal both
@@ -27,6 +28,7 @@ zcu104_target := zynqMP both
 zcu106_hpc0_target := zynqMP both
 zcu111_target := zynqMP both
 zcu208_target := zynqMP both
+zcu216_target := zynqMP both
 
 TARGET_LIST := $(sort $(patsubst %_target,%,$(filter %_target,$(.VARIABLES))))
 

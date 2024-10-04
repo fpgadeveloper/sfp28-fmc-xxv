@@ -39,6 +39,7 @@ dict set target_dict uzev { avnet.com ultrazed_7ev_cc zynqmp {0 1 2 3} }
 dict set target_dict vck190_fmcp1 { xilinx.com vck190 versal {0 1 2 3} }
 dict set target_dict vck190_fmcp2 { xilinx.com vck190 versal {0 1 2 3} }
 dict set target_dict vek280 { xilinx.com vek280 versal {0 1 2 3} }
+dict set target_dict vek280_es_revb { xilinx.com vek280_es_revb versal {0 1 2 3} }
 dict set target_dict vmk180_fmcp1 { xilinx.com vmk180 versal {0 1 2 3} }
 dict set target_dict vmk180_fmcp2 { xilinx.com vmk180 versal {0 1 2 3} }
 dict set target_dict vpk120 { xilinx.com vpk120 versal {0 1 2 3} }
@@ -49,6 +50,7 @@ dict set target_dict zcu104 { xilinx.com zcu104 zynqmp {0} }
 dict set target_dict zcu106_hpc0 { xilinx.com zcu106 zynqmp {0 1 2 3} }
 dict set target_dict zcu111 { xilinx.com zcu111 zynqmp {0 1 2 3} }
 dict set target_dict zcu208 { xilinx.com zcu208 zynqmp {0 1 2 3} }
+dict set target_dict zcu216 { xilinx.com zcu216 zynqmp {0 1 2 3} }
 
 # Function to display the options and get user input
 proc selectTarget {target_dict} {
@@ -218,14 +220,6 @@ if {$bd_script == "versal"} {
 } else {
   set_property -name "steps.write_bitstream.args.readback_file" -value "0" -objects $obj
   set_property -name "steps.write_bitstream.args.verbose" -value "0" -objects $obj
-}
-
-# UZ-EV design requires post hook script
-if { $target == "uzev_dual" } {
-  add_files -fileset utils_1 -norecurse $origin_dir/scripts/uzev_post_hook.tcl
-  set_property STEPS.OPT_DESIGN.TCL.POST [ get_files $origin_dir/scripts/uzev_post_hook.tcl -of [get_fileset utils_1] ] [get_runs impl_1]
-  # Suppress the critical warnings generated when the post hook overrides the IP's LOCs
-  set_msg_config -id "Constraints 18-4427" -new_severity WARNING
 }
 
 # set the current impl run

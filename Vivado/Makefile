@@ -20,6 +20,7 @@ uzev_target := 0
 vck190_fmcp1_target := 0
 vck190_fmcp2_target := 0
 vek280_target := 0
+vek280_es_revb_target := 0
 vmk180_fmcp1_target := 0
 vmk180_fmcp2_target := 0
 vpk120_target := 0
@@ -30,6 +31,7 @@ zcu104_target := 0
 zcu106_hpc0_target := 0
 zcu111_target := 0
 zcu208_target := 0
+zcu216_target := 0
 
 TARGET_LIST := $(sort $(patsubst %_target,%,$(filter %_target,$(.VARIABLES))))
 

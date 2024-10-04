@@ -1,3 +1,37 @@
 / {
+	ref_si5328: ref_si5328 {
+	    compatible = "fixed-clock";
+	    #clock-cells = <0>;
+	    clock-frequency = <114285000>;
+	};
 };
 
+/* Quad SFP28 FMC PL I2C */
+&axi_iic_0 {
+        i2c-mux@70 {
+                compatible = "nxp,pca9548";
+                #address-cells = <1>;
+                #size-cells = <0>;
+                reg = <0x70>;
+                i2c@4 {
+                        #address-cells = <1>;
+                        #size-cells = <0>;
+                        reg = <4>;
+                        si5328: clock-generator@68 {
+                                status = "okay";
+                                compatible = "silabs,si5328";
+                                reg = <0x68>;
+                                #address-cells = <1>;
+                                #size-cells = <0>;
+                                #clock-cells = <1>;
+                                clocks = <&ref_si5328>;
+                                clock-names = "xtal";
+
+                                si5328_clk: clk0@0 {
+                                        reg = <0>;
+                                        clock-frequency = <156250000>;
+                                };
+                        };
+                };
+        };
+};

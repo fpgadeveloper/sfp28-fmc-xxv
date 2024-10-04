@@ -40,23 +40,25 @@ FMC connectors. The table below lists the target design name, the SFP28 ports su
 the FMC connector on which to connect the Quad SFP28 FMC. Some of the target designs
 require a license to generate a bitstream with the AMD Xilinx tools.
 
-| Target board        | Target design     | Link speeds<br> supported | SFP28 ports | FMC Slot    | License<br> required |
-|---------------------|-------------------|---------|-------------|-------------|-----|
-| [KCU105]            | `kcu105_hpc`      | 10G     | 4x          | HPC         | YES |
-| [UltraZed-EV carrier] | `uzev`          | 10G     | 4x          | HPC         | NO  |
-| [VCK190]            | `vck190_fmcp1`    | 10G/25G | 4x          | FMCP1       | YES |
-| [VCK190]            | `vck190_fmcp2`    | 10G/25G | 4x          | FMCP2       | YES |
-| [VEK280]            | `vek280`          | 10G/25G | 4x          | FMCP        | YES |
-| [VMK180]            | `vmk180_fmcp1`    | 10G/25G | 4x          | FMCP1       | YES |
-| [VMK180]            | `vmk180_fmcp2`    | 10G/25G | 4x          | FMCP2       | YES |
-| [VPK120]            | `vpk120`          | 10G/25G | 4x          | FMCP        | YES |
-| [VCU118]            | `vcu118_fmcp`     | 10G/25G | 4x          | FMCP        | YES |
-| [ZCU102]            | `zcu102_hpc0`     | 10G     | 4x          | HPC0        | YES |
-| [ZCU102]            | `zcu102_hpc1`     | 10G     | 4x          | HPC1        | YES |
-| [ZCU104]            | `zcu104`          | 10G     | 1x          | LPC         | NO  |
-| [ZCU106]            | `zcu106_hpc0`     | 10G     | 4x          | HPC0        | NO  |
-| [ZCU111]            | `zcu111`          | 10G/25G | 4x          | FMCP        | YES |
-| [ZCU208]            | `zcu208`          | 10G/25G | 4x          | FMCP        | YES |
+| Target board        | Target design     | Link speeds<br> supported | SFP28 ports | FMC Slot    | License<br> required | Verified |
+|---------------------|-------------------|---------|-------------|-------------|-----|----|
+| [KCU105]            | `kcu105_hpc`      | 10G     | 4x          | HPC         | YES | :x: |
+| [UltraZed-EV carrier] | `uzev`          | 10G     | 4x          | HPC         | NO  | :x: |
+| [VCK190]            | `vck190_fmcp1`    | 10G/25G | 4x          | FMCP1       | YES | :x: |
+| [VCK190]            | `vck190_fmcp2`    | 10G/25G | 4x          | FMCP2       | YES | :x: |
+| [VEK280]            | `vek280`          | 10G/25G | 4x          | FMCP        | YES | :white_check_mark: |
+| [VEK280] ES Rev-B   | `vek280_es_revb`  | 10G/25G | 4x          | FMCP        | YES | :white_check_mark: |
+| [VMK180]            | `vmk180_fmcp1`    | 10G/25G | 4x          | FMCP1       | YES | :x: |
+| [VMK180]            | `vmk180_fmcp2`    | 10G/25G | 4x          | FMCP2       | YES | :x: |
+| [VPK120]            | `vpk120`          | 10G/25G | 4x          | FMCP        | YES | :x: |
+| [VCU118]            | `vcu118_fmcp`     | 10G/25G | 4x          | FMCP        | YES | :x: |
+| [ZCU102]            | `zcu102_hpc0`     | 10G     | 4x          | HPC0        | YES | :white_check_mark: |
+| [ZCU102]            | `zcu102_hpc1`     | 10G     | 4x          | HPC1        | YES | :white_check_mark: |
+| [ZCU104]            | `zcu104`          | 10G     | 1x          | LPC         | NO  | :x: |
+| [ZCU106]            | `zcu106_hpc0`     | 10G     | 4x          | HPC0        | NO  | :white_check_mark: |
+| [ZCU111]            | `zcu111`          | 10G/25G | 4x          | FMCP        | YES | :x: |
+| [ZCU208]            | `zcu208`          | 10G/25G | 4x          | FMCP        | YES | :x: |
+| [ZCU216]            | `zcu216`          | 10G/25G | 4x          | FMCP        | YES | :x: |
 
 ## Build instructions
 
@@ -105,6 +107,7 @@ updates on the awesome projects we work on.
 [KCU105]: https://www.xilinx.com/kcu105
 [ZCU111]: https://www.xilinx.com/zcu111
 [ZCU208]: https://www.xilinx.com/zcu208
+[ZCU216]: https://www.xilinx.com/zcu216
 [UltraZed-EV carrier]: https://www.xilinx.com/products/boards-and-kits/1-y3n9v1.html
 [ZCU102]: https://www.xilinx.com/zcu102
 [ZCU104]: https://www.xilinx.com/zcu104

@@ -13,13 +13,8 @@ set_property DRIVE 4 [get_ports i2c_*]
 # GT reference clock
 #####################
 
-# Using VPK120 Si570 (U205) clock oscillator for GT ref clock
-# Note that the default output of this device is 100MHz, so it must be properly
-# configured in the device tree to output 156.25MHz as required by the ref design
-set_property PACKAGE_PIN AW47 [get_ports gt_ref_clk_clk_p]; # FMC_SI570_BUF0_C_P
-
-# GT ref clock from the Quad FMC28 FMC Si5328 (uncomment to use it instead of the above)
-# set_property PACKAGE_PIN AU47 [get_ports gt_ref_clk_clk_p]; # GBTCLK0_M2C_P
+# GT ref clock from the Quad FMC28 FMC Si5328
+set_property PACKAGE_PIN AU47 [get_ports gt_ref_clk_clk_p]; # GBTCLK0_M2C_P
 
 #############
 # SFP SLOT 0
@@ -48,7 +43,7 @@ set_property PACKAGE_PIN C25 [get_ports {red_led_sfp0[0]}]; # LA01_CC_N
 # SFP slot 1: Gigabit transceivers
 set_property PACKAGE_PIN BG37 [get_ports {sfp_gt_gtx_p[1]}]; # DP1_C2M_P
 set_property PACKAGE_PIN BH37 [get_ports {sfp_gt_gtx_n[1]}]; # DP1_C2M_N
-set_property PACKAGE_PIN BM38 [get_ports {sfp_gt_grx_p[1]}]; # DP1_M2C_P
+set_property PACKAGE_PIN BM39 [get_ports {sfp_gt_grx_p[1]}]; # DP1_M2C_P
 set_property PACKAGE_PIN BN39 [get_ports {sfp_gt_grx_n[1]}]; # DP1_M2C_N
 
 # SFP slot 1: SFP I/O and User LEDs
