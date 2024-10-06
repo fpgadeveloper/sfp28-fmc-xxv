@@ -21,10 +21,10 @@ set_property PACKAGE_PIN L8 [get_ports gt_ref_clk_clk_p]; # GBTCLK0_M2C_P
 #############
 
 # SFP slot 0: Gigabit transceivers
-set_property PACKAGE_PIN N4 [get_ports {sfp_gt_gtx_p[0]}]; # DP0_C2M_P
-set_property PACKAGE_PIN N3 [get_ports {sfp_gt_gtx_n[0]}]; # DP0_C2M_N
-set_property PACKAGE_PIN P6 [get_ports {sfp_gt_grx_p[0]}]; # DP0_M2C_P
-set_property PACKAGE_PIN P5 [get_ports {sfp_gt_grx_n[0]}]; # DP0_M2C_N
+set_property PACKAGE_PIN P6 [get_ports {sfp_gt_gtx_p[0]}]; # DP0_C2M_P
+set_property PACKAGE_PIN P5 [get_ports {sfp_gt_gtx_n[0]}]; # DP0_C2M_N
+set_property PACKAGE_PIN N4 [get_ports {sfp_gt_grx_p[0]}]; # DP0_M2C_P
+set_property PACKAGE_PIN N3 [get_ports {sfp_gt_grx_n[0]}]; # DP0_M2C_N
 
 # SFP slot 0: SFP I/O and User LEDs
 set_property PACKAGE_PIN AF18 [get_ports tx_fault_sfp0]; # LA03_N
@@ -41,10 +41,10 @@ set_property PACKAGE_PIN AE17 [get_ports {red_led_sfp0[0]}]; # LA01_CC_N
 #############
 
 # SFP slot 1: Gigabit transceivers
-set_property PACKAGE_PIN M2 [get_ports {sfp_gt_gtx_p[1]}]; # DP1_C2M_P
-set_property PACKAGE_PIN M1 [get_ports {sfp_gt_gtx_n[1]}]; # DP1_C2M_N
-set_property PACKAGE_PIN M6 [get_ports {sfp_gt_grx_p[1]}]; # DP1_M2C_P
-set_property PACKAGE_PIN M5 [get_ports {sfp_gt_grx_n[1]}]; # DP1_M2C_N
+set_property PACKAGE_PIN M6 [get_ports {sfp_gt_gtx_p[1]}]; # DP1_C2M_P
+set_property PACKAGE_PIN M5 [get_ports {sfp_gt_gtx_n[1]}]; # DP1_C2M_N
+set_property PACKAGE_PIN M2 [get_ports {sfp_gt_grx_p[1]}]; # DP1_M2C_P
+set_property PACKAGE_PIN M1 [get_ports {sfp_gt_grx_n[1]}]; # DP1_M2C_N
 
 # SFP slot 1: SFP I/O and User LEDs
 set_property PACKAGE_PIN AK14 [get_ports tx_fault_sfp1]; # LA12_N
@@ -61,10 +61,10 @@ set_property PACKAGE_PIN AE19 [get_ports {red_led_sfp1[0]}]; # LA05_N
 #############
 
 # SFP slot 2: Gigabit transceivers
-set_property PACKAGE_PIN K2 [get_ports {sfp_gt_gtx_p[2]}]; # DP2_C2M_P
-set_property PACKAGE_PIN K1 [get_ports {sfp_gt_gtx_n[2]}]; # DP2_C2M_N
-set_property PACKAGE_PIN L4 [get_ports {sfp_gt_grx_p[2]}]; # DP2_M2C_P
-set_property PACKAGE_PIN L3 [get_ports {sfp_gt_grx_n[2]}]; # DP2_M2C_N
+set_property PACKAGE_PIN L4 [get_ports {sfp_gt_gtx_p[2]}]; # DP2_C2M_P
+set_property PACKAGE_PIN L3 [get_ports {sfp_gt_gtx_n[2]}]; # DP2_C2M_N
+set_property PACKAGE_PIN K2 [get_ports {sfp_gt_grx_p[2]}]; # DP2_M2C_P
+set_property PACKAGE_PIN K1 [get_ports {sfp_gt_grx_n[2]}]; # DP2_M2C_N
 
 # SFP slot 2: SFP I/O and User LEDs
 set_property PACKAGE_PIN AK13 [get_ports tx_fault_sfp2]; # LA15_P
@@ -81,10 +81,10 @@ set_property PACKAGE_PIN AH13 [get_ports {red_led_sfp2[0]}]; # LA16_N
 #############
 
 # SFP slot 3: Gigabit transceivers
-set_property PACKAGE_PIN J4 [get_ports {sfp_gt_gtx_p[3]}]; # DP3_C2M_P
-set_property PACKAGE_PIN J3 [get_ports {sfp_gt_gtx_n[3]}]; # DP3_C2M_N
-set_property PACKAGE_PIN K6 [get_ports {sfp_gt_grx_p[3]}]; # DP3_M2C_P
-set_property PACKAGE_PIN K5 [get_ports {sfp_gt_grx_n[3]}]; # DP3_M2C_N
+set_property PACKAGE_PIN K6 [get_ports {sfp_gt_gtx_p[3]}]; # DP3_C2M_P
+set_property PACKAGE_PIN K5 [get_ports {sfp_gt_gtx_n[3]}]; # DP3_C2M_N
+set_property PACKAGE_PIN J4 [get_ports {sfp_gt_grx_p[3]}]; # DP3_M2C_P
+set_property PACKAGE_PIN J3 [get_ports {sfp_gt_grx_n[3]}]; # DP3_M2C_N
 
 # SFP slot 3: SFP I/O and User LEDs
 set_property PACKAGE_PIN AG6 [get_ports tx_fault_sfp3]; # LA17_CC_P

@@ -13,11 +13,35 @@
                 #address-cells = <1>;
                 #size-cells = <0>;
                 reg = <0x70>;
+                i2c@0 {
+                        #address-cells = <1>;
+                        #size-cells = <0>;
+                        reg = <0>;
+                        /* SFP28 slot 0 */
+                };
+                i2c@1 {
+                        #address-cells = <1>;
+                        #size-cells = <0>;
+                        reg = <1>;
+                        /* SFP28 slot 1 */
+                };
+                i2c@2 {
+                        #address-cells = <1>;
+                        #size-cells = <0>;
+                        reg = <2>;
+                        /* SFP28 slot 2 */
+                };
+                i2c@3 {
+                        #address-cells = <1>;
+                        #size-cells = <0>;
+                        reg = <3>;
+                        /* SFP28 slot 3 */
+                };
                 i2c@4 {
                         #address-cells = <1>;
                         #size-cells = <0>;
                         reg = <4>;
-                        si5328: clock-generator@68 {
+                        fmc_si5328: clock-generator@68 {
                                 status = "okay";
                                 compatible = "silabs,si5328";
                                 reg = <0x68>;
@@ -27,7 +51,7 @@
                                 clocks = <&ref_si5328>;
                                 clock-names = "xtal";
 
-                                si5328_clk: clk0@0 {
+                                fmc_si5328_clk: clk0@0 {
                                         reg = <0>;
                                         clock-frequency = <156250000>;
                                 };

@@ -1,9 +1,5 @@
 # 10G/25G Ethernet Reference Designs for the Opsero Quad SFP28 FMC
 
-## UNDER DEVELOPMENT
-
-This project is currently under active development and may undergo significant changes.
-
 ## Description
 
 This project demonstrates the use of the Opsero [Quad SFP28 FMC] with 10G/25G Ethernet SFP+/SFP28 modules
@@ -43,22 +39,22 @@ require a license to generate a bitstream with the AMD Xilinx tools.
 | Target board        | Target design     | Link speeds<br> supported | SFP28 ports | FMC Slot    | License<br> required | Verified |
 |---------------------|-------------------|---------|-------------|-------------|-----|----|
 | [KCU105]            | `kcu105_hpc`      | 10G     | 4x          | HPC         | YES | :x: |
-| [UltraZed-EV carrier] | `uzev`          | 10G     | 4x          | HPC         | NO  | :x: |
-| [VCK190]            | `vck190_fmcp1`    | 10G/25G | 4x          | FMCP1       | YES | :x: |
-| [VCK190]            | `vck190_fmcp2`    | 10G/25G | 4x          | FMCP2       | YES | :x: |
+| [UltraZed-EV carrier] | `uzev`          | 10G     | 4x          | HPC         | NO  | :white_check_mark: |
+| [VCK190]            | `vck190_fmcp1`    | 10G/25G | 4x          | FMCP1       | YES | :white_check_mark: |
+| [VCK190]            | `vck190_fmcp2`    | 10G/25G | 4x          | FMCP2       | YES | :white_check_mark: |
 | [VEK280]            | `vek280`          | 10G/25G | 4x          | FMCP        | YES | :white_check_mark: |
 | [VEK280] ES Rev-B   | `vek280_es_revb`  | 10G/25G | 4x          | FMCP        | YES | :white_check_mark: |
-| [VMK180]            | `vmk180_fmcp1`    | 10G/25G | 4x          | FMCP1       | YES | :x: |
-| [VMK180]            | `vmk180_fmcp2`    | 10G/25G | 4x          | FMCP2       | YES | :x: |
-| [VPK120]            | `vpk120`          | 10G/25G | 4x          | FMCP        | YES | :x: |
+| [VMK180]            | `vmk180_fmcp1`    | 10G/25G | 4x          | FMCP1       | YES | :white_check_mark: |
+| [VMK180]            | `vmk180_fmcp2`    | 10G/25G | 4x          | FMCP2       | YES | :white_check_mark: |
+| [VPK120]            | `vpk120`          | 10G/25G | 4x          | FMCP        | YES | :white_check_mark: |
 | [VCU118]            | `vcu118_fmcp`     | 10G/25G | 4x          | FMCP        | YES | :x: |
 | [ZCU102]            | `zcu102_hpc0`     | 10G     | 4x          | HPC0        | YES | :white_check_mark: |
 | [ZCU102]            | `zcu102_hpc1`     | 10G     | 4x          | HPC1        | YES | :white_check_mark: |
-| [ZCU104]            | `zcu104`          | 10G     | 1x          | LPC         | NO  | :x: |
+| [ZCU104]            | `zcu104`          | 10G     | 1x          | LPC         | NO  | :white_check_mark: |
 | [ZCU106]            | `zcu106_hpc0`     | 10G     | 4x          | HPC0        | NO  | :white_check_mark: |
-| [ZCU111]            | `zcu111`          | 10G/25G | 4x          | FMCP        | YES | :x: |
-| [ZCU208]            | `zcu208`          | 10G/25G | 4x          | FMCP        | YES | :x: |
-| [ZCU216]            | `zcu216`          | 10G/25G | 4x          | FMCP        | YES | :x: |
+| [ZCU111]            | `zcu111`          | 10G/25G | 4x          | FMCP        | YES | :white_check_mark: |
+| [ZCU208]            | `zcu208`          | 10G/25G | 4x          | FMCP        | YES | :white_check_mark: |
+| [ZCU216]            | `zcu216`          | 10G/25G | 4x          | FMCP        | YES | :white_check_mark: |
 
 ## Build instructions
 
