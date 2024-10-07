@@ -15,7 +15,6 @@ TARGET ?= none
 JOBS ?= 8
 
 # valid targets
-kcu105_hpc_target := 0
 uzev_target := 0
 vck190_fmcp1_target := 0
 vck190_fmcp2_target := 0
@@ -24,7 +23,6 @@ vek280_es_revb_target := 0
 vmk180_fmcp1_target := 0
 vmk180_fmcp2_target := 0
 vpk120_target := 0
-vcu118_fmcp_target := 0
 zcu102_hpc0_target := 0
 zcu102_hpc1_target := 0
 zcu104_target := 0
@@ -32,6 +30,17 @@ zcu106_hpc0_target := 0
 zcu111_target := 0
 zcu208_target := 0
 zcu216_target := 0
+# 25G targets
+zcu111_25g_target := 0
+zcu208_25g_target := 0
+zcu216_25g_target := 0
+vck190_fmcp1_25g_target := 0
+vck190_fmcp2_25g_target := 0
+vek280_25g_target := 0
+vek280_es_revb_25g_target := 0
+vmk180_fmcp1_25g_target := 0
+vmk180_fmcp2_25g_target := 0
+vpk120_25g_target := 0
 
 TARGET_LIST := $(sort $(patsubst %_target,%,$(filter %_target,$(.VARIABLES))))
 

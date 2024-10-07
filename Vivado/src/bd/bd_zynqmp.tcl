@@ -99,6 +99,7 @@ set_property -dict [list \
   CONFIG.NUM_OF_CORES $n_ports \
   CONFIG.BASE_R_KR {BASE-R} \
   CONFIG.GT_REF_CLK_FREQ {156.25} \
+  CONFIG.LINE_RATE $line_rate \
   ] [get_bd_cells xxv_ethernet_0]
 
 # Clocks

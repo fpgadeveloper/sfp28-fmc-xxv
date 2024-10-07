@@ -25,9 +25,12 @@ This repo contains several designs that target the various supported development
 FMC connectors. The table below lists the target design name, the Ethernet ports supported by the design and 
 the FMC connector on which to connect the mezzanine card.
 
+### 10G Target designs
+
+These designs will support 10G SFP+/SFP28 modules.
+
 | Target board        | Target design     | Ports   | FMC Slot    | License<br> required |
 |---------------------|-------------------|---------|-------------|----------------------|
-| [KCU105]            | `kcu105_hpc`      | 4x      | HPC         | YES |
 | [UltraZed-EV carrier] | `uzev`          | 4x      | HPC         | NO  |
 | [VCK190]            | `vck190_fmcp1`    | 4x      | FMCP1       | YES |
 | [VCK190]            | `vck190_fmcp2`    | 4x      | FMCP2       | YES |
@@ -36,7 +39,6 @@ the FMC connector on which to connect the mezzanine card.
 | [VMK180]            | `vmk180_fmcp1`    | 4x      | FMCP1       | YES |
 | [VMK180]            | `vmk180_fmcp2`    | 4x      | FMCP2       | YES |
 | [VPK120]            | `vpk120`          | 4x      | FMCP        | YES |
-| [VCU118]            | `vcu118_fmcp`     | 4x      | FMCP        | YES |
 | [ZCU102]            | `zcu102_hpc0`     | 4x      | HPC0        | YES |
 | [ZCU102]            | `zcu102_hpc1`     | 4x      | HPC1        | YES |
 | [ZCU104]            | `zcu104`          | 1x      | LPC         | NO  |
@@ -44,6 +46,24 @@ the FMC connector on which to connect the mezzanine card.
 | [ZCU111]            | `zcu111`          | 4x      | FMCP        | YES |
 | [ZCU208]            | `zcu208`          | 4x      | FMCP        | YES |
 | [ZCU216]            | `zcu216`          | 4x      | FMCP        | YES |
+
+### 25G Target designs
+
+These designs will support 25G SFP+/SFP28 modules.
+
+| Target board        | Target design     | SFP28 ports | FMC Slot    | License<br> required |
+|---------------------|-------------------|-------------|-------------|-------------|
+| [VCK190]            | `vck190_fmcp1_25g`    | 4x      | FMCP1       | YES |
+| [VCK190]            | `vck190_fmcp2_25g`    | 4x      | FMCP2       | YES |
+| [VEK280]            | `vek280_25g`          | 4x      | FMCP        | YES |
+| [VEK280] ES Rev-B   | `vek280_es_revb_25g`  | 4x      | FMCP        | YES |
+| [VMK180]            | `vmk180_fmcp1_25g`    | 4x      | FMCP1       | YES |
+| [VMK180]            | `vmk180_fmcp2_25g`    | 4x      | FMCP2       | YES |
+| [VPK120]            | `vpk120_25g`          | 4x      | FMCP        | YES |
+| [ZCU111]            | `zcu111_25g`          | 4x      | FMCP        | YES |
+| [ZCU208]            | `zcu208_25g`          | 4x      | FMCP        | YES |
+| [ZCU216]            | `zcu216_25g`          | 4x      | FMCP        | YES |
+
 
 ## Windows users
 
@@ -95,24 +115,7 @@ to build the Vivado and PetaLinux projects with a single command.
    ```
    make project TARGET=<target>
    ```
-   Valid targets are: 
-   `kcu105_hpc`,
-   `uzev`,
-   `vck190_fmcp1`,
-   `vck190_fmcp2`,
-   `vek280`,
-   `vek280_es_revb`,
-   `vmk180_fmcp1`,
-   `vmk180_fmcp2`,
-   `vpk120`,
-   `vcu118_fmcp`,
-   `zcu102_hpc0`,
-   `zcu102_hpc1`,
-   `zcu104`,
-   `zcu106_hpc0`,
-   `zcu111`,
-   `zcu208`,
-   `zcu216`.
+   Valid targets are listed in the Target designs table above.
    That will create the Vivado project and block design without generating a bitstream or exporting to XSA.
 4. Open the generated project in the Vivado GUI and click **Generate Bitstream**. Once the build is
    complete, select **File->Export->Export Hardware** and be sure to tick **Include bitstream** and use
@@ -143,24 +146,7 @@ design if it has not already been done.
    cd PetaLinux
    make petalinux TARGET=<target>
    ```
-   Valid targets are: 
-   `kcu105_hpc`,
-   `uzev`,
-   `vck190_fmcp1`,
-   `vck190_fmcp2`,
-   `vek280`,
-   `vek280_es_revb`,
-   `vmk180_fmcp1`,
-   `vmk180_fmcp2`,
-   `vpk120`,
-   `vcu118_fmcp`,
-   `zcu102_hpc0`,
-   `zcu102_hpc1`,
-   `zcu104`,
-   `zcu106_hpc0`,
-   `zcu111`,
-   `zcu208`,
-   `zcu216`.
+   Valid targets are listed in the Target designs table above.
    Note that if you skipped the Vivado build steps above, the Makefile will first generate and
    build the Vivado project, and then build the PetaLinux project.
 
