@@ -36,40 +36,58 @@ FMC connectors. The table below lists the target design name, the SFP28 ports su
 the FMC connector on which to connect the Quad SFP28 FMC. Some of the target designs
 require a license to generate a bitstream with the AMD Xilinx tools.
 
+<!-- updater start -->
 ### 10G designs
 
-| Target board        | Target design     | Link speeds<br> supported | SFP28 ports | FMC Slot    | License<br> required |
-|---------------------|-------------------|---------|-------------|-------------|-----|
-| [UltraZed-EV carrier] | `uzev`          | 10G     | 4x          | HPC         | NO  |
-| [VCK190]            | `vck190_fmcp1`    | 10G     | 4x          | FMCP1       | YES |
-| [VCK190]            | `vck190_fmcp2`    | 10G     | 4x          | FMCP2       | YES |
-| [VEK280]            | `vek280`          | 10G     | 4x          | FMCP        | YES |
-| [VEK280] ES Rev-B   | `vek280_es_revb`  | 10G     | 4x          | FMCP        | YES |
-| [VMK180]            | `vmk180_fmcp1`    | 10G     | 4x          | FMCP1       | YES |
-| [VMK180]            | `vmk180_fmcp2`    | 10G     | 4x          | FMCP2       | YES |
-| [VPK120]            | `vpk120`          | 10G     | 4x          | FMCP        | YES |
-| [ZCU102]            | `zcu102_hpc0`     | 10G     | 4x          | HPC0        | YES |
-| [ZCU102]            | `zcu102_hpc1`     | 10G     | 4x          | HPC1        | YES |
-| [ZCU104]            | `zcu104`          | 10G     | 1x          | LPC         | NO  |
-| [ZCU106]            | `zcu106_hpc0`     | 10G     | 4x          | HPC0        | NO  |
-| [ZCU111]            | `zcu111`          | 10G     | 4x          | FMCP        | YES |
-| [ZCU208]            | `zcu208`          | 10G     | 4x          | FMCP        | YES |
-| [ZCU216]            | `zcu216`          | 10G     | 4x          | FMCP        | YES |
+| Target board          | Target design      | Link speeds <br> supported | SFP28 ports | FMC Slot    | License<br> required |
+|-----------------------|--------------------|------------|-------------|-------------|-------|
+| [UltraZed-EV Carrier] | `uzev`             | 10G        | 4x          | HPC         | NO    |
+| [VCK190]              | `vck190_fmcp1`     | 10G        | 4x          | FMCP1       | YES   |
+| [VCK190]              | `vck190_fmcp2`     | 10G        | 4x          | FMCP2       | YES   |
+| [VEK280]              | `vek280`           | 10G        | 4x          | FMCP        | YES   |
+| [VHK158]              | `vhk158`           | 10G        | 4x          | FMCP        | YES   |
+| [VMK180]              | `vmk180_fmcp1`     | 10G        | 4x          | FMCP1       | YES   |
+| [VMK180]              | `vmk180_fmcp2`     | 10G        | 4x          | FMCP2       | YES   |
+| [VPK120]              | `vpk120`           | 10G        | 4x          | FMCP        | YES   |
+| [VPK180]              | `vpk180`           | 10G        | 4x          | FMCP        | YES   |
+| [ZCU102]              | `zcu102_hpc0`      | 10G        | 4x          | HPC0        | YES   |
+| [ZCU102]              | `zcu102_hpc1`      | 10G        | 4x          | HPC1        | YES   |
+| [ZCU104]              | `zcu104`           | 10G        | 1x          | LPC         | NO    |
+| [ZCU106]              | `zcu106_hpc0`      | 10G        | 4x          | HPC0        | NO    |
+| [ZCU111]              | `zcu111`           | 10G        | 4x          | FMCP        | YES   |
+| [ZCU208]              | `zcu208`           | 10G        | 4x          | FMCP        | YES   |
+| [ZCU216]              | `zcu216`           | 10G        | 4x          | FMCP        | YES   |
 
 ### 25G designs
 
-| Target board        | Target design     | Link speeds<br> supported | SFP28 ports | FMC Slot    | License<br> required |
-|---------------------|-------------------|---------|-------------|-------------|-----|
-| [VCK190]            | `vck190_fmcp1_25g`    | 25G | 4x          | FMCP1       | YES |
-| [VCK190]            | `vck190_fmcp2_25g`    | 25G | 4x          | FMCP2       | YES |
-| [VEK280]            | `vek280_25g`          | 25G | 4x          | FMCP        | YES |
-| [VEK280] ES Rev-B   | `vek280_es_revb_25g`  | 25G | 4x          | FMCP        | YES |
-| [VMK180]            | `vmk180_fmcp1_25g`    | 25G | 4x          | FMCP1       | YES |
-| [VMK180]            | `vmk180_fmcp2_25g`    | 25G | 4x          | FMCP2       | YES |
-| [VPK120]            | `vpk120_25g`          | 25G | 4x          | FMCP        | YES |
-| [ZCU111]            | `zcu111_25g`          | 25G | 4x          | FMCP        | YES |
-| [ZCU208]            | `zcu208_25g`          | 25G | 4x          | FMCP        | YES |
-| [ZCU216]            | `zcu216_25g`          | 25G | 4x          | FMCP        | YES |
+| Target board          | Target design      | Link speeds <br> supported | SFP28 ports | FMC Slot    | License<br> required |
+|-----------------------|--------------------|------------|-------------|-------------|-------|
+| [VCK190]              | `vck190_fmcp1_25g` | 25G        | 4x          | FMCP1       | YES   |
+| [VCK190]              | `vck190_fmcp2_25g` | 25G        | 4x          | FMCP2       | YES   |
+| [VEK280]              | `vek280_25g`       | 25G        | 4x          | FMCP        | YES   |
+| [VHK158]              | `vhk158_25g`       | 25G        | 4x          | FMCP        | YES   |
+| [VMK180]              | `vmk180_fmcp1_25g` | 25G        | 4x          | FMCP1       | YES   |
+| [VMK180]              | `vmk180_fmcp2_25g` | 25G        | 4x          | FMCP2       | YES   |
+| [VPK120]              | `vpk120_25g`       | 25G        | 4x          | FMCP        | YES   |
+| [VPK180]              | `vpk180_25g`       | 25G        | 4x          | FMCP        | YES   |
+| [ZCU111]              | `zcu111_25g`       | 25G        | 4x          | FMCP        | YES   |
+| [ZCU208]              | `zcu208_25g`       | 25G        | 4x          | FMCP        | YES   |
+| [ZCU216]              | `zcu216_25g`       | 25G        | 4x          | FMCP        | YES   |
+
+[UltraZed-EV Carrier]: https://www.xilinx.com/products/boards-and-kits/1-1s78dxb.html
+[VCK190]: https://www.xilinx.com/vck190
+[VEK280]: https://www.xilinx.com/vek280
+[VHK158]: https://www.xilinx.com/vhk158
+[VMK180]: https://www.xilinx.com/vmk180
+[VPK120]: https://www.xilinx.com/vpk120
+[VPK180]: https://www.xilinx.com/vpk180
+[ZCU102]: https://www.xilinx.com/zcu102
+[ZCU104]: https://www.xilinx.com/zcu104
+[ZCU106]: https://www.xilinx.com/zcu106
+[ZCU111]: https://www.xilinx.com/zcu111
+[ZCU208]: https://www.xilinx.com/zcu208
+[ZCU216]: https://www.xilinx.com/zcu216
+<!-- updater end -->
 
 All of the 25G designs have the `_25g` postfix in the target label.
 
@@ -111,18 +129,4 @@ Follow our blog, [FPGA Developer](https://www.fpgadeveloper.com "FPGA Developer"
 updates on the awesome projects we work on.
 
 [Quad SFP28 FMC]: https://ethernetfmc.com/docs/quad-sfp28-fmc/overview/
-[VCK190]: https://www.xilinx.com/vck190
-[VEK280]: https://www.xilinx.com/vek280
-[VMK180]: https://www.xilinx.com/vmk180
-[VPK120]: https://www.xilinx.com/vpk120
-[VCU108]: https://www.xilinx.com/vcu108
-[VCU118]: https://www.xilinx.com/vcu118
-[KCU105]: https://www.xilinx.com/kcu105
-[ZCU111]: https://www.xilinx.com/zcu111
-[ZCU208]: https://www.xilinx.com/zcu208
-[ZCU216]: https://www.xilinx.com/zcu216
-[UltraZed-EV carrier]: https://www.xilinx.com/products/boards-and-kits/1-y3n9v1.html
-[ZCU102]: https://www.xilinx.com/zcu102
-[ZCU104]: https://www.xilinx.com/zcu104
-[ZCU106]: https://www.xilinx.com/zcu106
 
