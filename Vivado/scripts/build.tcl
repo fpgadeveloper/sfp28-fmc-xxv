@@ -53,6 +53,7 @@ dict set target_dict zcu102_hpc0 { xilinx.com zcu102 zynqmp { 0 1 2 3 } "10" }
 dict set target_dict zcu102_hpc1 { xilinx.com zcu102 zynqmp { 0 1 2 3 } "10" }
 dict set target_dict zcu104 { xilinx.com zcu104 zynqmp { 0 } "10" }
 dict set target_dict zcu106_hpc0 { xilinx.com zcu106 zynqmp { 0 1 2 3 } "10" }
+dict set target_dict zcu106_hpc1 { xilinx.com zcu106 zynqmp { 0 } "10" }
 dict set target_dict zcu111 { xilinx.com zcu111 zynqmp { 0 1 2 3 } "10" }
 dict set target_dict zcu208 { xilinx.com zcu208 zynqmp { 0 1 2 3 } "10" }
 dict set target_dict zcu216 { xilinx.com zcu216 zynqmp { 0 1 2 3 } "10" }

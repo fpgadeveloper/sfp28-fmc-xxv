@@ -309,6 +309,23 @@
     },
     {
       "publish": "YES",
+      "label": "zcu106_hpc1",
+      "board": "ZCU106",
+      "link": "https://www.xilinx.com/zcu106",
+      "url": "xilinx.com",
+      "boardname": "zcu106",
+      "lanes": ["0"],
+      "linkspeed": "10",
+      "connector": "HPC1",
+      "group": "zu",
+      "petalinux": "YES",
+      "baremetal": "YES",
+      "license": "NO",
+      "flashsize": "0",
+      "flashintf": "0"
+    },
+    {
+      "publish": "YES",
       "label": "zcu111",
       "board": "ZCU111",
       "link": "https://www.xilinx.com/zcu111",

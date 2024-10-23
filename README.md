@@ -54,6 +54,7 @@ require a license to generate a bitstream with the AMD Xilinx tools.
 | [ZCU102]              | `zcu102_hpc1`      | 10G        | 4x          | HPC1        | YES   |
 | [ZCU104]              | `zcu104`           | 10G        | 1x          | LPC         | NO    |
 | [ZCU106]              | `zcu106_hpc0`      | 10G        | 4x          | HPC0        | NO    |
+| [ZCU106]              | `zcu106_hpc1`      | 10G        | 1x          | HPC1        | NO    |
 | [ZCU111]              | `zcu111`           | 10G        | 4x          | FMCP        | YES   |
 | [ZCU208]              | `zcu208`           | 10G        | 4x          | FMCP        | YES   |
 | [ZCU216]              | `zcu216`           | 10G        | 4x          | FMCP        | YES   |

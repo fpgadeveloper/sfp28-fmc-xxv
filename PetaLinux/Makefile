@@ -31,6 +31,7 @@ zcu102_hpc0_target := zynqMP 0 0 ports-0123
 zcu102_hpc1_target := zynqMP 0 0 ports-0123
 zcu104_target := zynqMP 0 0 ports-0123
 zcu106_hpc0_target := zynqMP 0 0 ports-0123
+zcu106_hpc1_target := zynqMP 0 0 ports-0123
 zcu111_target := zynqMP 0 0 ports-0123
 zcu208_target := zynqMP 0 0 ports-0123
 zcu216_target := zynqMP 0 0 ports-0123

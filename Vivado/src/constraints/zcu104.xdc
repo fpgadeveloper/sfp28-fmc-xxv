@@ -13,12 +13,8 @@ set_property DRIVE 4 [get_ports i2c_*]
 # GT reference clock
 #####################
 
-# Using ZCU104 IDT 8T49N287A (U182) clock oscillator for GT ref clock
-# The device defaults to an output of 156.25MHz, the same frequency required by the ref design
-set_property PACKAGE_PIN U10 [get_ports gt_ref_clk_clk_p]; # HDMI_DRU_CLOCK_C_P
-
-# GT ref clock from the Quad FMC28 FMC Si5328 (uncomment to use it instead of the above)
-# set_property PACKAGE_PIN V8 [get_ports gt_ref_clk_clk_p]; # GBTCLK0_M2C_P
+# GT ref clock from the Quad FMC28 FMC Si5328
+set_property PACKAGE_PIN V8 [get_ports gt_ref_clk_clk_p]; # GBTCLK0_M2C_P
 
 #############
 # SFP SLOT 0

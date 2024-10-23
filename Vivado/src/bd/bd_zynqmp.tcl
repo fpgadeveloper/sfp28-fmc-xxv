@@ -516,6 +516,14 @@ foreach label $unused_ports {
   connect_bd_net [get_bd_pins unused_sfp_port$label/red_led] [get_bd_ports red_led_sfp$label]
 }
 
+# ZCU106 HPC1 design: remove ports that have no physical connection on the HPC1 connector
+if {$target == "zcu106_hpc1"} {
+  delete_bd_objs [get_bd_nets tx_fault_4] [get_bd_ports tx_fault_sfp3]
+  delete_bd_objs [get_bd_nets rx_los_4] [get_bd_ports rx_los_sfp3]
+  delete_bd_objs [get_bd_nets unused_sfp_port3_tx_disable] [get_bd_ports tx_disable_sfp3]
+  delete_bd_objs [get_bd_nets mod_abs_4] [get_bd_ports mod_abs_sfp3]
+}
+
 #########################################################
 # AXI Interfaces and interrupts
 #########################################################

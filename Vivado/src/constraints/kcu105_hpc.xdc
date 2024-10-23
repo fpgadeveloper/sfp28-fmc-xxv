@@ -13,12 +13,8 @@ set_property DRIVE 4 [get_ports i2c_*]
 # GT reference clock
 #####################
 
-# Using KCU105 Si570 (U32) clock oscillator for GT ref clock
-# The device defaults to an output of 156.25MHz, the same frequency required by the ref design
-set_property PACKAGE_PIN P6 [get_ports gt_ref_clk_clk_p]; # MGT_SI570_CLOCK_C_P
-
-# GT ref clock from the Quad FMC28 FMC Si5328 (uncomment to use it instead of the above)
-# set_property PACKAGE_PIN K6 [get_ports gt_ref_clk_clk_p]; # GBTCLK0_M2C_P
+# GT ref clock from the Quad FMC28 FMC Si5328
+set_property PACKAGE_PIN K6 [get_ports gt_ref_clk_clk_p]; # GBTCLK0_M2C_P
 
 #############
 # SFP SLOT 0

@@ -31,6 +31,7 @@ zcu102_hpc0_target := zynqMP both
 zcu102_hpc1_target := zynqMP both
 zcu104_target := zynqMP both
 zcu106_hpc0_target := zynqMP both
+zcu106_hpc1_target := zynqMP both
 zcu111_target := zynqMP both
 zcu208_target := zynqMP both
 zcu216_target := zynqMP both
