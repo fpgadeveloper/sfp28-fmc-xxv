@@ -92,6 +92,16 @@ require a license to generate a bitstream with the AMD Xilinx tools.
 
 All of the 25G designs have the `_25g` postfix in the target label.
 
+## Software
+
+These reference designs can be driven within a PetaLinux environment. 
+The repository includes all necessary scripts and code to build the PetaLinux environments. The table 
+below outlines the corresponding applications available in each environment:
+
+| Environment      | Available Applications  |
+|------------------|-------------------------|
+| PetaLinux        | Built-in Linux commands<br>Additional tools: ethtool, phytool, iperf3 |
+
 ## Build instructions
 
 Clone the repo:

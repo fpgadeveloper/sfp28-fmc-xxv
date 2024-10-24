@@ -86,7 +86,8 @@ to build the Vivado and PetaLinux projects with a single command.
    ```
    make project TARGET=<target>
    ```
-   Valid targets are listed in the Target designs table above.
+   Valid target labels are:
+   {% for design in data.designs %} `{{ design.label }}`{{ ", " if not loop.last else "." }} {% endfor %}
    That will create the Vivado project and block design without generating a bitstream or exporting to XSA.
 4. Open the generated project in the Vivado GUI and click **Generate Bitstream**. Once the build is
    complete, select **File->Export->Export Hardware** and be sure to tick **Include bitstream** and use
@@ -117,7 +118,8 @@ design if it has not already been done.
    cd PetaLinux
    make petalinux TARGET=<target>
    ```
-   Valid targets are listed in the Target designs table above.
+   Valid target labels for PetaLinux projects are:
+   {% for design in data.designs %}{% if design.petalinux == "YES" %} `{{ design.label }}`{{ ", " if not loop.last else "." }} {% endif %}{% endfor %}
    Note that if you skipped the Vivado build steps above, the Makefile will first generate and
    build the Vivado project, and then build the PetaLinux project.
 
