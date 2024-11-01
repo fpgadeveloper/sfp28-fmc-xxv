@@ -22,25 +22,28 @@ def load_json():
 # Create design tables for the README.md file
 # This function determines the formatting of the design tables
 def create_tables(data):
+    # License dict
+    to_edition = {True: "Enterprise", False: "Standard :free:"}
     tables = []
     links = {}
     for linkspeed in ['10','25']:
         tables.append('### {}G designs'.format(linkspeed))
         tables.append('')
-        tables.append('| Target board          | Target design      | Link speeds <br> supported | SFP28 ports | FMC Slot    | License<br> required |')
+        tables.append('| Target board          | Target design      | Link speeds <br> supported | SFP28 ports | FMC Slot    | Vivado<br> Edition |')
         tables.append('|-----------------------|--------------------|------------|-------------|-------------|-------|')
         for design in data['designs']:
-            if design['publish'] == 'NO':
+            if not design['publish']:
                 continue
             if design['linkspeed'] == linkspeed:
-                col1 = '[{0}]'.format(design['board']).ljust(21)
-                col2 = '`{0}`'.format(design['label']).ljust(18)
-                col3 = '{0}G'.format(design['linkspeed']).ljust(10)
+                cols = []
+                cols.append('[{0}]'.format(design['board']).ljust(21))
+                cols.append('`{0}`'.format(design['label']).ljust(18))
+                cols.append('{0}G'.format(design['linkspeed']).ljust(10))
                 ports = '{}x'.format(len(design['lanes']))
-                col4 = '{0}'.format(ports).ljust(11)
-                col5 = '{0}'.format(design['connector']).ljust(11)
-                col6 = '{0}'.format(design['license']).ljust(5)
-                tables.append('| {0} | {1} | {2} | {3} | {4} | {5} |'.format(col1,col2,col3,col4,col5,col6))
+                cols.append('{0}'.format(ports).ljust(11))
+                cols.append('{0}'.format(design['connector']).ljust(11))
+                cols.append('{0}'.format(to_edition[design['license']]).ljust(5))
+                tables.append('| ' + ' | '.join(cols) + ' |')
                 links[design['board']] = design['link']
         tables.append('')
     # Add the board links
@@ -50,6 +53,8 @@ def create_tables(data):
 
 # Update the README.md file target design tables
 def update_readme(file_path,data):
+    # Create the tables from the data
+    tables = create_tables(data)
     # Read the content of the file
     with open(file_path, 'r') as infile:
         lines = infile.readlines()
@@ -63,7 +68,6 @@ def update_readme(file_path,data):
                 # Write the start tag to the file
                 outfile.write(line)
                 # Write the tables
-                tables = create_tables(data)
                 for l in tables:
                     outfile.write("{}\n".format(l))
                 inside_updater = True
@@ -84,7 +88,7 @@ def get_root_targets(data):
             if design['linkspeed'] != linkspeed:
                 continue
             template = templates[design['group']]
-            if design['petalinux'] == "YES":
+            if design['petalinux']:
                 sw = 'both'
             else:
                 sw = 'baremetal_only'
@@ -122,7 +126,7 @@ def get_petalinux_targets(data):
         for design in data['designs']:
             if design['linkspeed'] != linkspeed:
                 continue
-            if design['petalinux'] == 'NO':
+            if not design['petalinux']:
                 continue
             '''
             lanecfg = 'ports-'
@@ -139,7 +143,7 @@ def get_vitis_targets(data):
     templates = {'fpga': 'microblaze', 'z7': 'zynq', 'zu': 'zynqMP', 'versal': 'versal'}
     targets = []
     for design in data['designs']:
-        if design['baremetal'] == 'NO':
+        if not design['baremetal']:
             continue
         template = templates[design['group']]
         target = '{}_target := {}'.format(design['label'],template)

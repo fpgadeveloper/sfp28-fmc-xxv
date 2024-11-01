@@ -39,41 +39,41 @@ require a license to generate a bitstream with the AMD Xilinx tools.
 <!-- updater start -->
 ### 10G designs
 
-| Target board          | Target design      | Link speeds <br> supported | SFP28 ports | FMC Slot    | License<br> required |
+| Target board          | Target design      | Link speeds <br> supported | SFP28 ports | FMC Slot    | Vivado<br> Edition |
 |-----------------------|--------------------|------------|-------------|-------------|-------|
-| [UltraZed-EV Carrier] | `uzev`             | 10G        | 4x          | HPC         | NO    |
-| [VCK190]              | `vck190_fmcp1`     | 10G        | 4x          | FMCP1       | YES   |
-| [VCK190]              | `vck190_fmcp2`     | 10G        | 4x          | FMCP2       | YES   |
-| [VEK280]              | `vek280`           | 10G        | 4x          | FMCP        | YES   |
-| [VHK158]              | `vhk158`           | 10G        | 4x          | FMCP        | YES   |
-| [VMK180]              | `vmk180_fmcp1`     | 10G        | 4x          | FMCP1       | YES   |
-| [VMK180]              | `vmk180_fmcp2`     | 10G        | 4x          | FMCP2       | YES   |
-| [VPK120]              | `vpk120`           | 10G        | 4x          | FMCP        | YES   |
-| [VPK180]              | `vpk180`           | 10G        | 4x          | FMCP        | YES   |
-| [ZCU102]              | `zcu102_hpc0`      | 10G        | 4x          | HPC0        | YES   |
-| [ZCU102]              | `zcu102_hpc1`      | 10G        | 4x          | HPC1        | YES   |
-| [ZCU104]              | `zcu104`           | 10G        | 1x          | LPC         | NO    |
-| [ZCU106]              | `zcu106_hpc0`      | 10G        | 4x          | HPC0        | NO    |
-| [ZCU106]              | `zcu106_hpc1`      | 10G        | 1x          | HPC1        | NO    |
-| [ZCU111]              | `zcu111`           | 10G        | 4x          | FMCP        | YES   |
-| [ZCU208]              | `zcu208`           | 10G        | 4x          | FMCP        | YES   |
-| [ZCU216]              | `zcu216`           | 10G        | 4x          | FMCP        | YES   |
+| [UltraZed-EV Carrier] | `uzev`             | 10G        | 4x          | HPC         | Standard :free: |
+| [VCK190]              | `vck190_fmcp1`     | 10G        | 4x          | FMCP1       | Enterprise |
+| [VCK190]              | `vck190_fmcp2`     | 10G        | 4x          | FMCP2       | Enterprise |
+| [VEK280]              | `vek280`           | 10G        | 4x          | FMCP        | Enterprise |
+| [VHK158]              | `vhk158`           | 10G        | 4x          | FMCP        | Enterprise |
+| [VMK180]              | `vmk180_fmcp1`     | 10G        | 4x          | FMCP1       | Enterprise |
+| [VMK180]              | `vmk180_fmcp2`     | 10G        | 4x          | FMCP2       | Enterprise |
+| [VPK120]              | `vpk120`           | 10G        | 4x          | FMCP        | Enterprise |
+| [VPK180]              | `vpk180`           | 10G        | 4x          | FMCP        | Enterprise |
+| [ZCU102]              | `zcu102_hpc0`      | 10G        | 4x          | HPC0        | Enterprise |
+| [ZCU102]              | `zcu102_hpc1`      | 10G        | 4x          | HPC1        | Enterprise |
+| [ZCU104]              | `zcu104`           | 10G        | 1x          | LPC         | Standard :free: |
+| [ZCU106]              | `zcu106_hpc0`      | 10G        | 4x          | HPC0        | Standard :free: |
+| [ZCU106]              | `zcu106_hpc1`      | 10G        | 1x          | HPC1        | Standard :free: |
+| [ZCU111]              | `zcu111`           | 10G        | 4x          | FMCP        | Enterprise |
+| [ZCU208]              | `zcu208`           | 10G        | 4x          | FMCP        | Enterprise |
+| [ZCU216]              | `zcu216`           | 10G        | 4x          | FMCP        | Enterprise |
 
 ### 25G designs
 
-| Target board          | Target design      | Link speeds <br> supported | SFP28 ports | FMC Slot    | License<br> required |
+| Target board          | Target design      | Link speeds <br> supported | SFP28 ports | FMC Slot    | Vivado<br> Edition |
 |-----------------------|--------------------|------------|-------------|-------------|-------|
-| [VCK190]              | `vck190_fmcp1_25g` | 25G        | 4x          | FMCP1       | YES   |
-| [VCK190]              | `vck190_fmcp2_25g` | 25G        | 4x          | FMCP2       | YES   |
-| [VEK280]              | `vek280_25g`       | 25G        | 4x          | FMCP        | YES   |
-| [VHK158]              | `vhk158_25g`       | 25G        | 4x          | FMCP        | YES   |
-| [VMK180]              | `vmk180_fmcp1_25g` | 25G        | 4x          | FMCP1       | YES   |
-| [VMK180]              | `vmk180_fmcp2_25g` | 25G        | 4x          | FMCP2       | YES   |
-| [VPK120]              | `vpk120_25g`       | 25G        | 4x          | FMCP        | YES   |
-| [VPK180]              | `vpk180_25g`       | 25G        | 4x          | FMCP        | YES   |
-| [ZCU111]              | `zcu111_25g`       | 25G        | 4x          | FMCP        | YES   |
-| [ZCU208]              | `zcu208_25g`       | 25G        | 4x          | FMCP        | YES   |
-| [ZCU216]              | `zcu216_25g`       | 25G        | 4x          | FMCP        | YES   |
+| [VCK190]              | `vck190_fmcp1_25g` | 25G        | 4x          | FMCP1       | Enterprise |
+| [VCK190]              | `vck190_fmcp2_25g` | 25G        | 4x          | FMCP2       | Enterprise |
+| [VEK280]              | `vek280_25g`       | 25G        | 4x          | FMCP        | Enterprise |
+| [VHK158]              | `vhk158_25g`       | 25G        | 4x          | FMCP        | Enterprise |
+| [VMK180]              | `vmk180_fmcp1_25g` | 25G        | 4x          | FMCP1       | Enterprise |
+| [VMK180]              | `vmk180_fmcp2_25g` | 25G        | 4x          | FMCP2       | Enterprise |
+| [VPK120]              | `vpk120_25g`       | 25G        | 4x          | FMCP        | Enterprise |
+| [VPK180]              | `vpk180_25g`       | 25G        | 4x          | FMCP        | Enterprise |
+| [ZCU111]              | `zcu111_25g`       | 25G        | 4x          | FMCP        | Enterprise |
+| [ZCU208]              | `zcu208_25g`       | 25G        | 4x          | FMCP        | Enterprise |
+| [ZCU216]              | `zcu216_25g`       | 25G        | 4x          | FMCP        | Enterprise |
 
 [UltraZed-EV Carrier]: https://www.xilinx.com/products/boards-and-kits/1-1s78dxb.html
 [VCK190]: https://www.xilinx.com/vck190
@@ -90,7 +90,11 @@ require a license to generate a bitstream with the AMD Xilinx tools.
 [ZCU216]: https://www.xilinx.com/zcu216
 <!-- updater end -->
 
-All of the 25G designs have the `_25g` postfix in the target label.
+Notes:
+1. The Vivado Edition column indicates which designs are supported by the Vivado *Standard* Edition, the
+   FREE edition which can be used without a license. Vivado *Enterprise* Edition requires
+   a license however a 30-day evaluation license is available from the AMD Xilinx Licensing site.
+2. All of the 25G designs have the `_25g` postfix in the target label.
 
 ## Software
 

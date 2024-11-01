@@ -30,11 +30,17 @@ the FMC connector on which to connect the mezzanine card.
 
 These designs will support {{ linkspeed }}G SFP+/SFP28 modules.
 
-| Target board        | Target design     | Ports   | FMC Slot    | License<br> required |
+| Target board        | Target design     | Ports   | FMC Slot    | Vivado<br> Edition |
 |---------------------|-------------------|---------|-------------|-----|
-{% for design in data.designs %}{% if design.linkspeed == linkspeed and design.publish != "NO" %}| [{{ design.board }}]({{ design.link }}) | `{{ design.label }}` | {{ design.lanes | length }}x | {{ design.connector }} | {{ design.license }} |
+{% for design in data.designs %}{% if design.linkspeed == linkspeed and design.publish %}| [{{ design.board }}]({{ design.link }}) | `{{ design.label }}` | {{ design.lanes | length }}x | {{ design.connector }} | {{ "Enterprise" if design.license else "Standard 🆓" }} |
 {% endif %}{% endfor %}
 {% endfor %}
+
+Notes:
+
+1. The Vivado Edition column indicates which designs are supported by the Vivado *Standard* Edition, the
+   FREE edition which can be used without a license. Vivado *Enterprise* Edition requires
+   a license however a 30-day evaluation license is available from the AMD Xilinx Licensing site.
 
 ## Windows users
 
@@ -119,7 +125,7 @@ design if it has not already been done.
    make petalinux TARGET=<target>
    ```
    Valid target labels for PetaLinux projects are:
-   {% for design in data.designs %}{% if design.petalinux == "YES" %} `{{ design.label }}`{{ ", " if not loop.last else "." }} {% endif %}{% endfor %}
+   {% for design in data.designs %}{% if design.petalinux %} `{{ design.label }}`{{ ", " if not loop.last else "." }} {% endif %}{% endfor %}
    Note that if you skipped the Vivado build steps above, the Makefile will first generate and
    build the Vivado project, and then build the PetaLinux project.
 
@@ -144,8 +150,8 @@ follow these instructions.
                              +---  downloads
                              +---  microblaze
    ```
-3. Create a text file called `offline.txt` that contains a single line of text. The single line of text
-   should be the path where you extracted the sstate-cache files. In this example, the contents of 
+3. Create a text file called `offline.txt` in the `PetaLinux` directory of the project repository. The file should contain
+   a single line of text specifying the path where you extracted the sstate-cache files. In this example, the contents of 
    the file would be:
    ```
    /home/user/petalinux-sstate
