@@ -93,7 +93,7 @@ to build the Vivado and PetaLinux projects with a single command.
    make project TARGET=<target>
    ```
    Valid target labels are:
-   {% for design in data.designs %} `{{ design.label }}`{{ ", " if not loop.last else "." }} {% endfor %}
+   {% for design in data.designs if design.publish %} `{{ design.label }}`{{ ", " if not loop.last else "." }} {% endfor %}
    That will create the Vivado project and block design without generating a bitstream or exporting to XSA.
 4. Open the generated project in the Vivado GUI and click **Generate Bitstream**. Once the build is
    complete, select **File->Export->Export Hardware** and be sure to tick **Include bitstream** and use
@@ -125,7 +125,7 @@ design if it has not already been done.
    make petalinux TARGET=<target>
    ```
    Valid target labels for PetaLinux projects are:
-   {% for design in data.designs %}{% if design.petalinux %} `{{ design.label }}`{{ ", " if not loop.last else "." }} {% endif %}{% endfor %}
+   {% for design in data.designs if design.petalinux and design.publish %} `{{ design.label }}`{{ ", " if not loop.last else "." }} {% endfor %}
    Note that if you skipped the Vivado build steps above, the Makefile will first generate and
    build the Vivado project, and then build the PetaLinux project.
 
@@ -162,18 +162,4 @@ follow these instructions.
 Now when you use `make` to build the PetaLinux projects, they will be configured for offline build.
 
 [supported Linux distributions]: https://docs.amd.com/r/en-US/ug1144-petalinux-tools-reference-guide/Setting-Up-Your-Environment
-[VCK190]: https://www.xilinx.com/vck190
-[VEK280]: https://www.xilinx.com/vek280
-[VMK180]: https://www.xilinx.com/vmk180
-[VPK120]: https://www.xilinx.com/vpk120
-[VCU108]: https://www.xilinx.com/vcu108
-[VCU118]: https://www.xilinx.com/vcu118
-[KCU105]: https://www.xilinx.com/kcu105
-[ZCU111]: https://www.xilinx.com/zcu111
-[ZCU208]: https://www.xilinx.com/zcu208
-[UltraZed-EV carrier]: https://www.xilinx.com/products/boards-and-kits/1-y3n9v1.html
-[ZCU102]: https://www.xilinx.com/zcu102
-[ZCU104]: https://www.xilinx.com/zcu104
-[ZCU106]: https://www.xilinx.com/zcu106
-[ZCU216]: https://www.xilinx.com/zcu216
 
