@@ -2,7 +2,7 @@
 
 ## Description
 
-This project demonstrates the use of the Opsero [Quad SFP28 FMC] with 10G/25G Ethernet SFP+/SFP28 modules
+This project demonstrates the use of the Opsero [Quad SFP28 FMC] (OP081) with 10G/25G Ethernet SFP+/SFP28 modules
 and it supports several FPGA/MPSoC development boards.
 
 ![Quad SFP28 FMC with VEK280](docs/source/images/quad-sfp28-fmc-vek280.jpg "Quad SFP28 FMC with VEK280")
