@@ -522,6 +522,11 @@ if {$target == "zcu106_hpc1"} {
   delete_bd_objs [get_bd_nets rx_los_4] [get_bd_ports rx_los_sfp3]
   delete_bd_objs [get_bd_nets unused_sfp_port3_tx_disable] [get_bd_ports tx_disable_sfp3]
   delete_bd_objs [get_bd_nets mod_abs_4] [get_bd_ports mod_abs_sfp3]
+  # attach the unused inputs to constant
+  create_bd_cell -type inline_hdl -vlnv xilinx.com:inline_hdl:ilconstant const_high
+  connect_bd_net [get_bd_pins const_high/dout] [get_bd_pins unused_sfp_port3/mod_abs]
+  connect_bd_net [get_bd_pins const_high/dout] [get_bd_pins unused_sfp_port3/rx_los]
+  connect_bd_net [get_bd_pins const_high/dout] [get_bd_pins unused_sfp_port3/tx_fault]
 }
 
 #########################################################

@@ -560,7 +560,6 @@ proc create_sfp_port {label} {
   # Clocks and reset
   connect_bd_net [get_bd_pins sys_clk] [get_bd_pins xxv_ethernet/s_axi_aclk_0]
   connect_bd_net [get_bd_pins periph_rstn] [get_bd_pins xxv_ethernet/s_axi_aresetn_0]
-  connect_bd_net [get_bd_pins apb3clk] [get_bd_pins xxv_ethernet/gtwiz_reset_clk_freerun_in_0]
 
   # GT connections
   connect_bd_net [get_bd_pins gtpowergood_in] [get_bd_pins xxv_ethernet/gtpowergood_in_0]

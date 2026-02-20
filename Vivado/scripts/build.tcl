@@ -1,4 +1,4 @@
-# Opsero Electronic Design Inc. Copyright 2024
+# Opsero Electronic Design Inc. Copyright 2025
 #
 # Project build script
 #
@@ -17,8 +17,8 @@
 #*****************************************************************************************
 
 # Check the version of Vivado used
-set version_required "2024.1"
-set ver [lindex [split $::env(XILINX_VIVADO) /] end]
+set version_required "2025.2"
+set ver [lindex [split $::env(XILINX_VIVADO) /] end-1]
 if {![string equal $ver $version_required]} {
   puts "###############################"
   puts "### Failed to build project ###"
@@ -42,7 +42,6 @@ dict set target_dict uzev { avnet.com ultrazed_7ev_cc zynqmp { 0 1 2 3 } "10" }
 dict set target_dict vck190_fmcp1 { xilinx.com vck190 versal { 0 1 2 3 } "10" }
 dict set target_dict vck190_fmcp2 { xilinx.com vck190 versal { 0 1 2 3 } "10" }
 dict set target_dict vek280 { xilinx.com vek280 versal { 0 1 2 3 } "10" }
-dict set target_dict vek280_es_revb { xilinx.com vek280_es_revb versal { 0 1 2 3 } "10" }
 dict set target_dict vhk158 { xilinx.com vhk158 versal { 0 1 2 3 } "10" }
 dict set target_dict vmk180_fmcp1 { xilinx.com vmk180 versal { 0 1 2 3 } "10" }
 dict set target_dict vmk180_fmcp2 { xilinx.com vmk180 versal { 0 1 2 3 } "10" }
@@ -61,7 +60,6 @@ dict set target_dict zcu216 { xilinx.com zcu216 zynqmp { 0 1 2 3 } "10" }
 dict set target_dict vck190_fmcp1_25g { xilinx.com vck190 versal { 0 1 2 3 } "25" }
 dict set target_dict vck190_fmcp2_25g { xilinx.com vck190 versal { 0 1 2 3 } "25" }
 dict set target_dict vek280_25g { xilinx.com vek280 versal { 0 1 2 3 } "25" }
-dict set target_dict vek280_es_revb_25g { xilinx.com vek280_es_revb versal { 0 1 2 3 } "25" }
 dict set target_dict vhk158_25g { xilinx.com vhk158 versal { 0 1 2 3 } "25" }
 dict set target_dict vmk180_fmcp1_25g { xilinx.com vmk180 versal { 0 1 2 3 } "25" }
 dict set target_dict vmk180_fmcp2_25g { xilinx.com vmk180 versal { 0 1 2 3 } "25" }
@@ -141,6 +139,8 @@ set design_name ${target}
 set block_name sfp
 set board_url [lindex [dict get $target_dict $target] 0]
 set board_name [lindex [dict get $target_dict $target] 1]
+# Append Avnet bdf to the board repo paths (needed for Auboard)
+set_param board.repoPaths [concat [get_param board.repoPaths] [list [file normalize "../submodules/avnet-bdf"]]]
 set proj_board [get_board_parts "$board_url:$board_name:*" -latest_file_version]
 # Check if the board files are installed, if not, install them
 if { $proj_board == "" } {
@@ -217,10 +217,10 @@ set_property -name "top" -value "${block_name}_wrapper" -objects $obj
 
 # Create 'synth_1' run (if not found)
 if {[string equal [get_runs -quiet synth_1] ""]} {
-  create_run -name synth_1 -part ${fpga_part} -flow {Vivado Synthesis 2024} -strategy "Vivado Synthesis Defaults" -report_strategy {No Reports} -constrset constrs_1
+  create_run -name synth_1 -part ${fpga_part} -flow {Vivado Synthesis 2025} -strategy "Vivado Synthesis Defaults" -report_strategy {No Reports} -constrset constrs_1
 } else {
   set_property strategy "Vivado Synthesis Defaults" [get_runs synth_1]
-  set_property flow "Vivado Synthesis 2024" [get_runs synth_1]
+  set_property flow "Vivado Synthesis 2025" [get_runs synth_1]
 }
 set obj [get_runs synth_1]
 
@@ -229,10 +229,10 @@ current_run -synthesis [get_runs synth_1]
 
 # Create 'impl_1' run (if not found)
 if {[string equal [get_runs -quiet impl_1] ""]} {
-  create_run -name impl_1 -part ${fpga_part} -flow {Vivado Implementation 2024} -strategy "Vivado Implementation Defaults" -report_strategy {No Reports} -constrset constrs_1 -parent_run synth_1
+  create_run -name impl_1 -part ${fpga_part} -flow {Vivado Implementation 2025} -strategy "Vivado Implementation Defaults" -report_strategy {No Reports} -constrset constrs_1 -parent_run synth_1
 } else {
   set_property strategy "Vivado Implementation Defaults" [get_runs impl_1]
-  set_property flow "Vivado Implementation 2024" [get_runs impl_1]
+  set_property flow "Vivado Implementation 2025" [get_runs impl_1]
 }
 set obj [get_runs impl_1]
 if {$bd_script == "versal"} {
@@ -249,7 +249,18 @@ current_run -implementation [get_runs impl_1]
 puts "INFO: Project created:${design_name}"
 
 # Create block design
-source $origin_dir/src/bd/bd_${bd_script}.tcl
+set bd_script_path "$origin_dir/src/bd/bd_${bd_script}.tcl"
+if {![file exists $bd_script_path]} {
+    puts "ERROR: Block design script not found: $bd_script_path"
+    close_project
+    return
+}
+if {[catch {source $bd_script_path} errmsg]} {
+    puts "ERROR: Block design creation failed: $errmsg"
+    catch {save_bd_design}
+    close_project
+    return
+}
 
 # Generate the wrapper
 make_wrapper -files [get_files *${block_name}.bd] -top
