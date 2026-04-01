@@ -129,7 +129,7 @@ Source Vivado and PetaLinux tools:
 
 ```
 source <path-to-petalinux>/2025.2/settings.sh
-source <path-to-vivado>/2025.2/settings64.sh
+source <path-to-xilinx-tools>/2025.2/Vivado/settings64.sh
 ```
 
 Build all (Vivado project and PetaLinux):
