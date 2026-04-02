@@ -36,8 +36,6 @@ set_param board.repoPaths [get_property LOCAL_ROOT_DIR [xhub::get_xstores xilinx
 # Possible targets
 # UPDATER START
 # 10G designs
-dict set target_dict auboard { avnet.com auboard_15p mb { 0 1 2 3 } "10" }
-dict set target_dict kcu105_hpc { xilinx.com kcu105 mb { 0 1 2 3 } "10" }
 dict set target_dict uzev { avnet.com ultrazed_7ev_cc zynqmp { 0 1 2 3 } "10" }
 dict set target_dict vck190_fmcp1 { xilinx.com vck190 versal { 0 1 2 3 } "10" }
 dict set target_dict vck190_fmcp2 { xilinx.com vck190 versal { 0 1 2 3 } "10" }
@@ -47,7 +45,6 @@ dict set target_dict vmk180_fmcp1 { xilinx.com vmk180 versal { 0 1 2 3 } "10" }
 dict set target_dict vmk180_fmcp2 { xilinx.com vmk180 versal { 0 1 2 3 } "10" }
 dict set target_dict vpk120 { xilinx.com vpk120 versal { 0 1 2 3 } "10" }
 dict set target_dict vpk180 { xilinx.com vpk180 versal { 0 1 2 3 } "10" }
-dict set target_dict vcu118 { xilinx.com vcu118 mb { 0 1 2 3 } "10" }
 dict set target_dict zcu102_hpc0 { xilinx.com zcu102 zynqmp { 0 1 2 3 } "10" }
 dict set target_dict zcu102_hpc1 { xilinx.com zcu102 zynqmp { 0 1 2 3 } "10" }
 dict set target_dict zcu104 { xilinx.com zcu104 zynqmp { 0 } "10" }

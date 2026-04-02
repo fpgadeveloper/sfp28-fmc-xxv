@@ -14,8 +14,6 @@ JOBS ?= 8
 # valid targets (template name, both (plnx+baremetal) or baremetal_only)
 # UPDATER START
 # 10G designs
-auboard_target := microblaze both
-kcu105_hpc_target := microblaze both
 uzev_target := zynqMP both
 vck190_fmcp1_target := versal both
 vck190_fmcp2_target := versal both
@@ -25,7 +23,6 @@ vmk180_fmcp1_target := versal both
 vmk180_fmcp2_target := versal both
 vpk120_target := versal both
 vpk180_target := versal both
-vcu118_target := microblaze both
 zcu102_hpc0_target := zynqMP both
 zcu102_hpc1_target := zynqMP both
 zcu104_target := zynqMP both
