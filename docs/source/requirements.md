@@ -2,8 +2,8 @@
 
 In order to test this design on hardware, you will need the following:
 
-* Vivado 2024.1
-* PetaLinux Tools 2024.1
+* Vivado 2025.2
+* PetaLinux Tools 2025.2
 * [Quad SFP28 FMC]
 * [Xilinx 10G/25G Ethernet MAC/PCS (25GEMAC) License](https://www.xilinx.com/products/intellectual-property/ef-di-25gemac.html)
 * One of the supported carrier boards listed below

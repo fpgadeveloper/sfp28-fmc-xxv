@@ -4,7 +4,6 @@
 
 RM = rm -rf
 ROOT_DIR = $(shell pwd)
-BD_NAME = sfp
 
 # defaults
 .DEFAULT_GOAL := bootimage
@@ -13,6 +12,7 @@ JOBS ?= 8
 
 # valid targets (template name, both (plnx+baremetal) or baremetal_only)
 # UPDATER START
+BD_NAME = sfp
 # 10G designs
 uzev_target := zynqMP both
 vck190_fmcp1_target := versal both

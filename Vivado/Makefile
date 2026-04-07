@@ -7,7 +7,6 @@ MKDIR = mkdir -p
 RM = rm -rf
 ROOT_DIR = $(shell pwd)
 VIVADO = $(XILINX_VIVADO)/bin/vivado
-BD_NAME = sfp
 
 # defaults
 .DEFAULT_GOAL := xsa
@@ -16,6 +15,7 @@ JOBS ?= 8
 
 # valid targets
 # UPDATER START
+BD_NAME = sfp
 uzev_target := 0
 vck190_fmcp1_target := 0
 vck190_fmcp2_target := 0
