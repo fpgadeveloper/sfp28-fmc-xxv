@@ -1,5 +1,6 @@
 {
   "bd_name": "sfp",
+  "prj_name": "sfp28-fmc-xxv",
   "groups": [
     {
       "label": "fpga",
