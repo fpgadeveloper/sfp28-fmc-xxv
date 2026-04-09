@@ -115,7 +115,7 @@ foreach label $ports {
 
 # Resets
 connect_bd_net [get_bd_pins rst_ps_100m/peripheral_reset] [get_bd_pins xxv_ethernet_0/sys_reset]
-create_bd_cell -type ip -vlnv xilinx.com:ip:util_vector_logic logic_not
+create_bd_cell -type inline_hdl -vlnv xilinx.com:inline_hdl:ilvector_logic:1.0 logic_not
 set_property -dict [list CONFIG.C_OPERATION {not} CONFIG.C_SIZE {1} ] [get_bd_cells logic_not]
 connect_bd_net [get_bd_pins zynq_ultra_ps_e_0/pl_resetn0] [get_bd_pins logic_not/Op1]
 foreach label $ports {
@@ -125,7 +125,7 @@ foreach label $ports {
 }
 
 # Constants for 10G/25G Ethernet core
-set const_low [ create_bd_cell -type ip -vlnv xilinx.com:ip:xlconstant const_low ]
+set const_low [ create_bd_cell -type inline_hdl -vlnv xilinx.com:inline_hdl:ilconstant:1.0 const_low ]
 set_property CONFIG.CONST_VAL {0} [get_bd_cells const_low]
 foreach label $ports {
   connect_bd_net [get_bd_pins const_low/dout] [get_bd_pins xxv_ethernet_0/ctl_tx_send_idle_$label]
@@ -133,14 +133,14 @@ foreach label $ports {
   connect_bd_net [get_bd_pins const_low/dout] [get_bd_pins xxv_ethernet_0/ctl_tx_send_rfi_$label]
 }
 
-set const_clksel [ create_bd_cell -type ip -vlnv xilinx.com:ip:xlconstant const_clksel ]
+set const_clksel [ create_bd_cell -type inline_hdl -vlnv xilinx.com:inline_hdl:ilconstant:1.0 const_clksel ]
 set_property -dict [list CONFIG.CONST_VAL {5} CONFIG.CONST_WIDTH {3} ] [get_bd_cells const_clksel]
 foreach label $ports {
   connect_bd_net [get_bd_pins const_clksel/dout] [get_bd_pins xxv_ethernet_0/txoutclksel_in_$label]
   connect_bd_net [get_bd_pins const_clksel/dout] [get_bd_pins xxv_ethernet_0/rxoutclksel_in_$label]
 }
 
-set const_preamble [ create_bd_cell -type ip -vlnv xilinx.com:ip:xlconstant const_preamble ]
+set const_preamble [ create_bd_cell -type inline_hdl -vlnv xilinx.com:inline_hdl:ilconstant:1.0 const_preamble ]
 set_property -dict [list CONFIG.CONST_VAL {0} CONFIG.CONST_WIDTH {56} ] [get_bd_cells const_preamble]
 foreach label $ports {
   connect_bd_net [get_bd_pins const_preamble/dout] [get_bd_pins xxv_ethernet_0/tx_preamblein_$label]
@@ -270,13 +270,13 @@ proc create_sfp_port {label} {
   connect_bd_intf_net -boundary_type upper [get_bd_intf_pins axi_dma/S_AXI_LITE] [get_bd_intf_pins S_AXI_LITE]
 
   # DMA TX reset
-  create_bd_cell -type ip -vlnv xilinx.com:ip:util_vector_logic logic_dma_tx_rst
+  create_bd_cell -type inline_hdl -vlnv xilinx.com:inline_hdl:ilvector_logic:1.0 logic_dma_tx_rst
   set_property -dict [list CONFIG.C_OPERATION {not} CONFIG.C_SIZE {1} ] [get_bd_cells logic_dma_tx_rst]
   connect_bd_net [get_bd_pins axi_dma/mm2s_prmry_reset_out_n] [get_bd_pins logic_dma_tx_rst/Op1]
   connect_bd_net [get_bd_pins logic_dma_tx_rst/Res] [get_bd_pins tx_reset]
 
   # DMA RX reset
-  create_bd_cell -type ip -vlnv xilinx.com:ip:util_vector_logic logic_dma_rx_rst
+  create_bd_cell -type inline_hdl -vlnv xilinx.com:inline_hdl:ilvector_logic:1.0 logic_dma_rx_rst
   set_property -dict [list CONFIG.C_OPERATION {not} CONFIG.C_SIZE {1} ] [get_bd_cells logic_dma_rx_rst]
   connect_bd_net [get_bd_pins axi_dma/s2mm_prmry_reset_out_n] [get_bd_pins logic_dma_rx_rst/Op1]
   connect_bd_net [get_bd_pins logic_dma_rx_rst/Res] [get_bd_pins rx_reset]
@@ -301,13 +301,13 @@ proc create_sfp_port {label} {
   connect_bd_net [get_bd_pins rx_clk_out] [get_bd_pins axi_int_hp/S02_ACLK]
 
   # MAC TX reset
-  create_bd_cell -type ip -vlnv xilinx.com:ip:util_vector_logic logic_tx_rst
+  create_bd_cell -type inline_hdl -vlnv xilinx.com:inline_hdl:ilvector_logic:1.0 logic_tx_rst
   set_property -dict [list CONFIG.C_OPERATION {not} CONFIG.C_SIZE {1} ] [get_bd_cells logic_tx_rst]
   connect_bd_net [get_bd_pins user_tx_reset] [get_bd_pins logic_tx_rst/Op1]
   connect_bd_net [get_bd_pins logic_tx_rst/Res] [get_bd_pins axi_int_hp/S01_ARESETN]
 
   # MAC RX reset
-  create_bd_cell -type ip -vlnv xilinx.com:ip:util_vector_logic logic_rx_rst
+  create_bd_cell -type inline_hdl -vlnv xilinx.com:inline_hdl:ilvector_logic:1.0 logic_rx_rst
   set_property -dict [list CONFIG.C_OPERATION {not} CONFIG.C_SIZE {1} ] [get_bd_cells logic_rx_rst]
   connect_bd_net [get_bd_pins user_rx_reset] [get_bd_pins logic_rx_rst/Op1]
   connect_bd_net [get_bd_pins logic_rx_rst/Res] [get_bd_pins axi_int_hp/S02_ARESETN]
@@ -351,9 +351,9 @@ proc create_sfp_port {label} {
   #########################################################
 
   # Create constants HIGH and LOW for the SFP I/Os
-  set const_high [ create_bd_cell -type ip -vlnv xilinx.com:ip:xlconstant const_high ]
+  set const_high [ create_bd_cell -type inline_hdl -vlnv xilinx.com:inline_hdl:ilconstant:1.0 const_high ]
   set_property -dict [list CONFIG.CONST_VAL {1}] $const_high
-  set const_low [ create_bd_cell -type ip -vlnv xilinx.com:ip:xlconstant const_low ]
+  set const_low [ create_bd_cell -type inline_hdl -vlnv xilinx.com:inline_hdl:ilconstant:1.0 const_low ]
   set_property -dict [list CONFIG.CONST_VAL {0}] $const_low
 
   # TX DISABLE - LOW
@@ -363,21 +363,21 @@ proc create_sfp_port {label} {
   # RATE SEL 1 - LOW
   connect_bd_net [get_bd_pins const_low/dout] [get_bd_pins rate_sel1]
   # MOD_ABS - Module absent input
-  create_bd_cell -type ip -vlnv xilinx.com:ip:util_vector_logic logic_not_mod_abs
+  create_bd_cell -type inline_hdl -vlnv xilinx.com:inline_hdl:ilvector_logic:1.0 logic_not_mod_abs
   set_property -dict [list CONFIG.C_OPERATION {not} CONFIG.C_SIZE {1} ] [get_bd_cells logic_not_mod_abs]
   connect_bd_net [get_bd_pins mod_abs] [get_bd_pins logic_not_mod_abs/Op1]
   # RX LOS - Receiver Loss of Signal input
-  create_bd_cell -type ip -vlnv xilinx.com:ip:util_vector_logic logic_not_rx_los
+  create_bd_cell -type inline_hdl -vlnv xilinx.com:inline_hdl:ilvector_logic:1.0 logic_not_rx_los
   set_property -dict [list CONFIG.C_OPERATION {not} CONFIG.C_SIZE {1} ] [get_bd_cells logic_not_rx_los]
   connect_bd_net [get_bd_pins rx_los] [get_bd_pins logic_not_rx_los/Op1]
   # And gate to drive the green LED
-  create_bd_cell -type ip -vlnv xilinx.com:ip:util_vector_logic logic_and_grn_led
+  create_bd_cell -type inline_hdl -vlnv xilinx.com:inline_hdl:ilvector_logic:1.0 logic_and_grn_led
   set_property -dict [list CONFIG.C_OPERATION {and} CONFIG.C_SIZE {1} ] [get_bd_cells logic_and_grn_led]
   connect_bd_net [get_bd_pins logic_not_mod_abs/Res] [get_bd_pins logic_and_grn_led/Op1]
   connect_bd_net [get_bd_pins logic_not_rx_los/Res] [get_bd_pins logic_and_grn_led/Op2]
   connect_bd_net [get_bd_pins logic_and_grn_led/Res] [get_bd_pins grn_led]
   # And gate to drive the red LED
-  create_bd_cell -type ip -vlnv xilinx.com:ip:util_vector_logic logic_and_red_led
+  create_bd_cell -type inline_hdl -vlnv xilinx.com:inline_hdl:ilvector_logic:1.0 logic_and_red_led
   set_property -dict [list CONFIG.C_OPERATION {and} CONFIG.C_SIZE {1} ] [get_bd_cells logic_and_red_led]
   connect_bd_net [get_bd_pins logic_not_mod_abs/Res] [get_bd_pins logic_and_red_led/Op1]
   connect_bd_net [get_bd_pins rx_los] [get_bd_pins logic_and_red_led/Op2]
@@ -473,7 +473,7 @@ proc create_unused_sfp_port {label} {
   #########################################################
 
   # Create constant LOW for the SFP I/Os
-  set const_low [ create_bd_cell -type ip -vlnv xilinx.com:ip:xlconstant const_low ]
+  set const_low [ create_bd_cell -type inline_hdl -vlnv xilinx.com:inline_hdl:ilconstant:1.0 const_low ]
   set_property -dict [list CONFIG.CONST_VAL {0}] $const_low
 
   # TX DISABLE - LOW
@@ -570,7 +570,7 @@ create_axi_ic "ps_axi_periph" "zynq_ultra_ps_e_0/pl_clk0" "rst_ps_100m" \
 
 # Connect the interrupts (direct to PL-PS interrupt) to pl_ps_irq0 and pl_ps_irq1
 # NOTE: The interrupt list must not have more than 16 interrupts
-set p_intr_concat [create_bd_cell -type ip -vlnv xilinx.com:ip:xlconcat p_intr_concat0]
+set p_intr_concat [create_bd_cell -type inline_hdl -vlnv xilinx.com:inline_hdl:ilconcat:1.0 p_intr_concat0]
 connect_bd_net [get_bd_pins ${p_intr_concat}/dout] [get_bd_pins zynq_ultra_ps_e_0/pl_ps_irq0]
 set_property -dict [list CONFIG.NUM_PORTS 8] $p_intr_concat
 set n_interrupts [llength $priority_intr_list]
@@ -580,7 +580,7 @@ foreach intr $priority_intr_list {
   set intr_index [expr {$intr_index+1}]
   if { $intr_index == 8 } {
     set_property CONFIG.PSU__USE__IRQ1 {1} [get_bd_cells zynq_ultra_ps_e_0]
-    set p_intr_concat [create_bd_cell -type ip -vlnv xilinx.com:ip:xlconcat p_intr_concat1]
+    set p_intr_concat [create_bd_cell -type inline_hdl -vlnv xilinx.com:inline_hdl:ilconcat:1.0 p_intr_concat1]
     connect_bd_net [get_bd_pins ${p_intr_concat}/dout] [get_bd_pins zynq_ultra_ps_e_0/pl_ps_irq1]
     set_property -dict [list CONFIG.NUM_PORTS 8] $p_intr_concat
     set intr_index 0
