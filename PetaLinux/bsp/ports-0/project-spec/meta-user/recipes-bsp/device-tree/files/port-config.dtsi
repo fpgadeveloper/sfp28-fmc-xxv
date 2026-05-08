@@ -1,0 +1,96 @@
+/* Single-port variant of port-config.dtsi for designs that only wire up
+ * Quad SFP28 FMC slot 0 to an XXV MAC instance — currently zcu104 and
+ * zcu106_hpc1, both of which have ports={0} in Vivado/scripts/build.tcl.
+ * Slots 1-3 still exist on the FMC card and have I2C buses behind the
+ * pca9548 mux, but no MAC node (xxv_ethernet_0_1/_2/_3) exists in
+ * pl.dtsi — referencing those labels here would error the dtc compile
+ * with "Label or path xxv_ethernet_0_1 not found".
+ *
+ * Kept structurally parallel to bsp/ports-0123/.../port-config.dtsi
+ * so the four-port version remains the canonical reference. */
+
+/ {
+	ref_si5328: ref_si5328 {
+	    compatible = "fixed-clock";
+	    #clock-cells = <0>;
+	    clock-frequency = <114285000>;
+	};
+};
+
+&axi_iic_0 {
+        i2c-mux@70 {
+                compatible = "nxp,pca9548";
+                #address-cells = <1>;
+                #size-cells = <0>;
+                reg = <0x70>;
+                sfp_eth0_i2c: i2c@0 {
+                        #address-cells = <1>;
+                        #size-cells = <0>;
+                        reg = <0>;
+                        /* SFP28 slot 0 */
+                };
+                /* SFP28 slots 1-3 — buses still exposed by the FMC card,
+                 * but no MAC is wired to those cages on this target, so
+                 * we don't add sfp-eth1..3 nodes. */
+                i2c@1 {
+                        #address-cells = <1>;
+                        #size-cells = <0>;
+                        reg = <1>;
+                };
+                i2c@2 {
+                        #address-cells = <1>;
+                        #size-cells = <0>;
+                        reg = <2>;
+                };
+                i2c@3 {
+                        #address-cells = <1>;
+                        #size-cells = <0>;
+                        reg = <3>;
+                };
+                i2c@4 {
+                        #address-cells = <1>;
+                        #size-cells = <0>;
+                        reg = <4>;
+                        fmc_si5328: clock-generator@68 {
+                                status = "okay";
+                                compatible = "silabs,si5328";
+                                reg = <0x68>;
+                                #address-cells = <1>;
+                                #size-cells = <0>;
+                                #clock-cells = <1>;
+                                clocks = <&ref_si5328>;
+                                clock-names = "xtal";
+
+                                fmc_si5328_clk: clk0@0 {
+                                        reg = <0>;
+                                        clock-frequency = <156250000>;
+                                };
+                        };
+                };
+        };
+};
+
+/* SFP cage descriptor for port 0. axi_gpio_qpllrst still exposes 4 input
+ * bits on Channel 2 for MOD_ABS — only bit 1 (line index 1, mod_abs[0])
+ * is referenced here since that's the only cage with a MAC.
+ * Active-low: line LOW = module present. */
+/ {
+        sfp_eth0: sfp-eth0 {
+                compatible = "sff,sfp";
+                i2c-bus = <&sfp_eth0_i2c>;
+                mod-def0-gpios = <&axi_gpio_qpllrst 1 1>;
+                maximum-power-milliwatt = <2000>;
+        };
+};
+
+/* Port 0 XXV overrides:
+ *  - qpllreset-gpios: shared QPLL reset on Channel 1 line 0 of
+ *    axi_gpio_qpllrst, pulsed once at first device_reset() by the
+ *    patched xilinx_axienet driver. Flag 0 = GPIO_ACTIVE_HIGH.
+ *  - sfp: links the MAC to its SFP cage descriptor.
+ *  - port 0 already gets MAC 00:0a:35:00:00:01 from the SDT-generated
+ *    pl.dtsi, so no local-mac-address override is needed here. */
+&xxv_ethernet_0 {
+        qpllreset-gpios = <&axi_gpio_qpllrst 0 0>;
+        sfp = <&sfp_eth0>;
+};

@@ -136,12 +136,12 @@ def get_petalinux_targets(data):
                 continue
             if not design['petalinux']:
                 continue
-            '''
-            lanecfg = 'ports-'
-            for lane in design['lanes']:
-                lanecfg += lane
-            '''
-            lanecfg = 'ports-0123'
+            # Derive the BSP-overlay name from the populated lanes so that
+            # single-lane designs (e.g. zcu104, zcu106_hpc1 with lanes=["0"])
+            # pick up bsp/ports-0/ — its port-config.dtsi only references
+            # the xxv_ethernet_0 / sfp_eth0 labels that the SDT generator
+            # actually produces. Multi-lane designs get bsp/ports-0123/.
+            lanecfg = 'ports-' + ''.join(design['lanes'])
             template = templates[design['group']]
             target = '{}_target := {} {} {} {}'.format(design['label'],template,design['flashsize'],design['flashintf'],lanecfg)
             targets.append(target)

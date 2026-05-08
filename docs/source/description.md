@@ -67,5 +67,5 @@ below outlines the corresponding applications available in each environment:
 |------------------|-------------------------|
 | PetaLinux        | Built-in Linux commands<br>Additional tools: ethtool, phytool, iperf3 |
 
-[Quad SFP28 FMC]: https://ethernetfmc.com/docs/quad-sfp28-fmc/overview/
+[Quad SFP28 FMC]: https://docs.opsero.com/op081/datasheet/overview/
 [10G/25G Ethernet Subsystem IP]: https://www.xilinx.com/products/intellectual-property/ef-di-25gemac.html

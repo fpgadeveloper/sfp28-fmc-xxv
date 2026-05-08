@@ -197,105 +197,204 @@ Ethernet port and not the Quad SFP28 FMC.
 
 ## Example Usage
 
-### Enable port
+The examples below were captured on a `zcu102_hpc0` build with an SFP28 module
+in Quad SFP28 FMC port 0, which is named `end1` on that board. Substitute your
+own interface name (see the [Port configurations](#port-configurations)
+section above for the mapping that applies to your design).
 
-This example will bring up a port.
+### List the network interfaces
 
-```
-root@axieth:~# sudo ifconfig eth1 up
-[  228.274146] xilinx_axienet a0000000.ethernet eth1: Link is Up - 10Gbps/Full - flow control off
-[  228.282753] IPv6: ADDRCONF(NETDEV_CHANGE): eth1: link becomes ready
-```
-
-### Enable port with fixed IP address
-
-This example sets a fixed IP address to a port.
+Run `ifconfig` (or `ip addr`) with no arguments to see all interfaces and their
+current state. The on-board Ethernet port appears as `end0` (or `eth0`,
+depending on the design); each Quad SFP28 FMC port appears as a separate
+interface with a `00:0a:35:00:00:0X` MAC address.
 
 ```
-root@axieth:~# sudo ifconfig eth1 192.168.2.30 up
-[  390.080498] net eth1: Promiscuous mode disabled.
-[  390.085406] net eth1: Promiscuous mode disabled.
-[  390.091089] xilinx_axienet a0000000.ethernet eth1: Link is Down
-[  394.175238] xilinx_axienet a0000000.ethernet eth1: Link is Up - 10Gbps/Full - flow control off
-[  394.183769] IPv6: ADDRCONF(NETDEV_CHANGE): eth1: link becomes ready
-```
-
-### Enable port using DHCP
-
-This example enables a port and obtains an IP address for the port via DHCP. Note that the
-port must be connected to a DHCP enabled router.
-
-```
-root@axieth:~# sudo udhcpc -i eth1
-udhcpc: started, v1.31.0
-[   68.814013] xilinx_axienet a0000000.ethernet eth1: Link is Up - 10Gbps/Full - flow control off
-[   68.822670] IPv6: ADDRCONF(NETDEV_CHANGE): eth1: link becomes ready
-udhcpc: sending discover
-udhcpc: sending select for 192.168.2.23
-udhcpc: lease of 192.168.2.23 obtained, lease time 259200
-/etc/udhcpc.d/50default: Adding DNS 192.168.2.1
-```
-
-### Check port status
-
-In this example, we use the ``ifconfig`` command with no arguments to check the port status.
-The first interface (eth0) shown below is connected to the on-board Ethernet port and it has not been
-enabled, whereas the second interface (eth1) is connected to the Quad SFP28 FMC port 0 and it has
-been enabled and configured with IP address 192.168.2.30.
-
-```
-root@axieth:~# ifconfig
-eth0      Link encap:Ethernet  HWaddr 00:0A:35:00:22:01
+zcu102-sfp28-2025-2:~$ ifconfig
+end0      Link encap:Ethernet  HWaddr 8A:DE:CC:88:57:66
           UP BROADCAST MULTICAST  MTU:1500  Metric:1
-          RX packets:0 errors:0 dropped:0 overruns:0 frame:0
-          TX packets:0 errors:0 dropped:0 overruns:0 carrier:0
-          collisions:0 txqueuelen:1000
-          RX bytes:0 (0.0 B)  TX bytes:0 (0.0 B)
-          Interrupt:30
+          ...
 
-eth1      Link encap:Ethernet  HWaddr 00:0A:35:00:01:22
-          inet addr:192.168.2.30  Bcast:192.168.2.255  Mask:255.255.255.0
-          inet6 addr: fe80::20a:35ff:fe00:122/64 Scope:Link
-          UP BROADCAST RUNNING  MTU:1500  Metric:1
-          RX packets:38 errors:0 dropped:0 overruns:0 frame:0
-          TX packets:26 errors:0 dropped:0 overruns:0 carrier:0
-          collisions:0 txqueuelen:1000
-          RX bytes:6033 (5.8 KiB)  TX bytes:3302 (3.2 KiB)
+end1      Link encap:Ethernet  HWaddr 00:0A:35:00:00:01
+          inet6 addr: fe80::20a:35ff:fe00:1/64 Scope:Link
+          UP BROADCAST RUNNING MULTICAST  MTU:1500  Metric:1
+          ...
+
+eth2      Link encap:Ethernet  HWaddr 00:0A:35:00:00:02
+          UP BROADCAST RUNNING MULTICAST  MTU:1500  Metric:1
+          ...
+
+eth3      Link encap:Ethernet  HWaddr 00:0A:35:00:00:03
+          UP BROADCAST RUNNING MULTICAST  MTU:1500  Metric:1
+          ...
+
+eth4      Link encap:Ethernet  HWaddr 00:0A:35:00:00:04
+          UP BROADCAST RUNNING MULTICAST  MTU:1500  Metric:1
+          ...
 
 lo        Link encap:Local Loopback
           inet addr:127.0.0.1  Mask:255.0.0.0
-          inet6 addr: ::1/128 Scope:Host
-          UP LOOPBACK RUNNING  MTU:65536  Metric:1
-          RX packets:0 errors:0 dropped:0 overruns:0 frame:0
-          TX packets:0 errors:0 dropped:0 overruns:0 carrier:0
-          collisions:0 txqueuelen:1000
-          RX bytes:0 (0.0 B)  TX bytes:0 (0.0 B)
+          ...
 ```
 
-We can also use ``ethtool`` to check the port status as follows.
+### Bring up a port with a fixed IP address
+
+Use `ip` (or `ifconfig`) to assign a static address and bring the port up.
 
 ```
-root@axieth:~# ethtool eth1
-Settings for eth1:
-
-COMING SOON
-
+zcu102-sfp28-2025-2:~$ sudo ip addr add 192.168.1.10/24 dev end1
+zcu102-sfp28-2025-2:~$ sudo ip link set end1 up
+[   42.118663] xilinx_axienet 80060000.ethernet end1: Link is Up - 10Gbps/Full - flow control off
 ```
 
-### Ping link partner using specific port
-
-In this example we ping the link partner at IP address 192.168.2.10 from interface eth1.
+Verify with `ifconfig end1`:
 
 ```
-root@axieth:~# ping -I eth1 192.168.2.10
-PING 192.168.2.10 (192.168.2.10): 56 data bytes
-64 bytes from 192.168.2.10: seq=0 ttl=128 time=0.545 ms
-64 bytes from 192.168.2.10: seq=1 ttl=128 time=0.455 ms
-64 bytes from 192.168.2.10: seq=2 ttl=128 time=0.380 ms
-64 bytes from 192.168.2.10: seq=3 ttl=128 time=0.356 ms
+zcu102-sfp28-2025-2:~$ ifconfig end1
+end1      Link encap:Ethernet  HWaddr 00:0A:35:00:00:01
+          inet addr:192.168.1.10  Bcast:0.0.0.0  Mask:255.255.255.0
+          inet6 addr: fe80::20a:35ff:fe00:1/64 Scope:Link
+          UP BROADCAST RUNNING MULTICAST  MTU:1500  Metric:1
 ```
 
+### Bring up a port using DHCP
 
-[Quad SFP28 FMC]: https://ethernetfmc.com/docs/quad-sfp28-fmc/overview/
+Use `udhcpc` to lease an address from a DHCP server reachable on the link
+(for example a router, or a host PC running NetworkManager in shared mode).
+
+```
+zcu102-sfp28-2025-2:~$ sudo udhcpc -i end1
+udhcpc: started, v1.36.1
+udhcpc: broadcasting discover
+udhcpc: broadcasting select for 192.168.1.22, server 192.168.1.1
+udhcpc: lease of 192.168.1.22 obtained from 192.168.1.1, lease time 3600
+/etc/udhcpc.d/50default: Adding DNS 192.168.1.1
+```
+
+### Inspect port settings with ethtool
+
+Use `ethtool` to query link state, speed, duplex, supported link modes and the
+PHY/transceiver type for a port.
+
+```
+zcu102-sfp28-2025-2:~$ sudo ethtool end1
+Settings for end1:
+        Supported ports: [ MII ]
+        Supported link modes:   10000baseT/Full
+                                10000baseKX4/Full
+                                10000baseKR/Full
+                                10000baseR_FEC
+                                10000baseCR/Full
+                                10000baseSR/Full
+                                10000baseLR/Full
+                                10000baseLRM/Full
+                                10000baseER/Full
+        Supported pause frame use: Symmetric Receive-only
+        Supports auto-negotiation: Yes
+        Supported FEC modes: Not reported
+        Advertised link modes:  10000baseT/Full
+                                10000baseKX4/Full
+                                10000baseKR/Full
+                                10000baseR_FEC
+                                10000baseCR/Full
+                                10000baseSR/Full
+                                10000baseLR/Full
+                                10000baseLRM/Full
+                                10000baseER/Full
+        Advertised pause frame use: Symmetric Receive-only
+        Advertised auto-negotiation: Yes
+        Advertised FEC modes: Not reported
+        Speed: 10000Mb/s
+        Duplex: Full
+        Auto-negotiation: on
+        Port: MII
+        PHYAD: 0
+        Transceiver: internal
+        Link detected: yes
+```
+
+`Link detected: yes` along with `Speed: 10000Mb/s` confirms the GTH transceiver
+has acquired the link with the SFP28 module.
+
+### Ping a link partner
+
+With the port up and an address assigned, use `ping` to verify reachability of
+a host on the same link. The `-I` option forces the ping to egress from the
+specified interface.
+
+```
+zcu102-sfp28-2025-2:~$ ping -I end1 192.168.1.1
+PING 192.168.1.1 (192.168.1.1) from 192.168.1.22 end1: 56(84) bytes of data.
+64 bytes from 192.168.1.1: icmp_seq=1 ttl=64 time=0.180 ms
+64 bytes from 192.168.1.1: icmp_seq=2 ttl=64 time=0.151 ms
+64 bytes from 192.168.1.1: icmp_seq=3 ttl=64 time=0.144 ms
+64 bytes from 192.168.1.1: icmp_seq=4 ttl=64 time=0.146 ms
+^C
+--- 192.168.1.1 ping statistics ---
+4 packets transmitted, 4 received, 0% packet loss, time 3052ms
+rtt min/avg/max/mdev = 0.144/0.155/0.180/0.014 ms
+```
+
+### Throughput test with iperf3
+
+`iperf3` is the standard tool for measuring TCP/UDP throughput over a link.
+Run it as a server on one end and a client on the other; the direction of the
+data flow is from client to server by default.
+
+For the examples below we will use a host PC as the iperf3 server and the
+PetaLinux target as the iperf3 client.
+
+#### On the host PC (server side)
+
+Install iperf3 (any recent Linux distribution will have it packaged) and start
+it in server mode. The default listening port is 5201.
+
+```
+$ sudo apt install iperf3
+$ iperf3 -s
+-----------------------------------------------------------
+Server listening on 5201 (test #1)
+-----------------------------------------------------------
+```
+
+Make sure the host PC and the target are on the same subnet — for example, the
+host PC has IP 192.168.1.1/24 on its SFP28 NIC, and the target has
+192.168.1.22/24 on `end1`.
+
+#### On the PetaLinux target (client side)
+
+Run iperf3 in client mode, pointing it at the host's IP address. Use `-t` to
+set the test duration in seconds and `-i` to set the per-interval reporting
+period.
+
+```
+zcu102-sfp28-2025-2:~$ iperf3 -c 192.168.1.1 -t 10 -i 1
+Connecting to host 192.168.1.1, port 5201
+[  5] local 192.168.1.22 port 41284 connected to 192.168.1.1 port 5201
+[ ID] Interval           Transfer     Bitrate         Retr  Cwnd
+[  5]   0.00-1.00   sec  1.10 GBytes  9.42 Gbits/sec    0    624 KBytes
+[  5]   1.00-2.00   sec  1.10 GBytes  9.41 Gbits/sec    0    624 KBytes
+[  5]   2.00-3.00   sec  1.10 GBytes  9.41 Gbits/sec    0    624 KBytes
+[  5]   3.00-4.00   sec  1.10 GBytes  9.41 Gbits/sec    0    624 KBytes
+[  5]   4.00-5.00   sec  1.10 GBytes  9.41 Gbits/sec    0    624 KBytes
+[  5]   5.00-6.00   sec  1.10 GBytes  9.41 Gbits/sec    0    624 KBytes
+[  5]   6.00-7.00   sec  1.10 GBytes  9.41 Gbits/sec    0    624 KBytes
+[  5]   7.00-8.00   sec  1.10 GBytes  9.41 Gbits/sec    0    624 KBytes
+[  5]   8.00-9.00   sec  1.10 GBytes  9.41 Gbits/sec    0    624 KBytes
+[  5]   9.00-10.00  sec  1.10 GBytes  9.41 Gbits/sec    0    624 KBytes
+- - - - - - - - - - - - - - - - - - - - - - - - -
+[ ID] Interval           Transfer     Bitrate         Retr
+[  5]   0.00-10.00  sec  10.9 GBytes  9.41 Gbits/sec    0          sender
+[  5]   0.00-10.00  sec  10.9 GBytes  9.41 Gbits/sec         receiver
+
+iperf test Complete. Summary Results:
+```
+
+To measure throughput in the opposite direction (host PC → target), add the
+`-R` flag on the client side. To exercise UDP instead of TCP, add `-u` and
+specify a target rate with `-b`, for example `-b 10G` to push 10 Gbps.
+
+
+[Quad SFP28 FMC]: https://docs.opsero.com/op081/datasheet/overview/
 [supported Linux distributions]: https://docs.amd.com/r/en-US/ug1144-petalinux-tools-reference-guide/Setting-Up-Your-Environment
 

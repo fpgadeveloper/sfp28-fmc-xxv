@@ -6,32 +6,34 @@
 	};
 };
 
-/* Quad SFP28 FMC PL I2C */
+/* Quad SFP28 FMC PL I2C. The four SFP cage I2C buses sit behind a pca9548
+ * mux; each gets a label so the corresponding sfp-eth* node can reference
+ * it via "i2c-bus" for module EEPROM/diagnostics access. */
 &axi_iic_0 {
         i2c-mux@70 {
                 compatible = "nxp,pca9548";
                 #address-cells = <1>;
                 #size-cells = <0>;
                 reg = <0x70>;
-                i2c@0 {
+                sfp_eth0_i2c: i2c@0 {
                         #address-cells = <1>;
                         #size-cells = <0>;
                         reg = <0>;
                         /* SFP28 slot 0 */
                 };
-                i2c@1 {
+                sfp_eth1_i2c: i2c@1 {
                         #address-cells = <1>;
                         #size-cells = <0>;
                         reg = <1>;
                         /* SFP28 slot 1 */
                 };
-                i2c@2 {
+                sfp_eth2_i2c: i2c@2 {
                         #address-cells = <1>;
                         #size-cells = <0>;
                         reg = <2>;
                         /* SFP28 slot 2 */
                 };
-                i2c@3 {
+                sfp_eth3_i2c: i2c@3 {
                         #address-cells = <1>;
                         #size-cells = <0>;
                         reg = <3>;
@@ -58,4 +60,76 @@
                         };
                 };
         };
+};
+
+/* SFP cage descriptors for the kernel SFP framework. Each cage has its
+ * own EEPROM I2C bus (sfp_ethN_i2c, defined in the pca9548 above) and
+ * a MOD_ABS line on axi_gpio_qpllrst Channel 2 (line indices 1..4 —
+ * Channel 1 line 0 is the qpllreset output). Active-low: line LOW =
+ * module present, line HIGH = module absent. With the sfp = <&...>
+ * link below, phylink delegates module presence detection to the SFP
+ * framework and keeps quiet on empty cages instead of flapping the
+ * in-band-status link state. */
+/ {
+        sfp_eth0: sfp-eth0 {
+                compatible = "sff,sfp";
+                i2c-bus = <&sfp_eth0_i2c>;
+                mod-def0-gpios = <&axi_gpio_qpllrst 1 1>;
+                maximum-power-milliwatt = <2000>;
+        };
+
+        sfp_eth1: sfp-eth1 {
+                compatible = "sff,sfp";
+                i2c-bus = <&sfp_eth1_i2c>;
+                mod-def0-gpios = <&axi_gpio_qpllrst 2 1>;
+                maximum-power-milliwatt = <2000>;
+        };
+
+        sfp_eth2: sfp-eth2 {
+                compatible = "sff,sfp";
+                i2c-bus = <&sfp_eth2_i2c>;
+                mod-def0-gpios = <&axi_gpio_qpllrst 3 1>;
+                maximum-power-milliwatt = <2000>;
+        };
+
+        sfp_eth3: sfp-eth3 {
+                compatible = "sff,sfp";
+                i2c-bus = <&sfp_eth3_i2c>;
+                mod-def0-gpios = <&axi_gpio_qpllrst 4 1>;
+                maximum-power-milliwatt = <2000>;
+        };
+};
+
+/* Per-port XXV overrides:
+ *  - qpllreset-gpios: every port carries the same shared QPLL reset GPIO
+ *    (Channel 1 bit 0 of axi_gpio_qpllrst). The patched xilinx_axienet
+ *    driver pulses it once at the first device_reset() to re-lock the
+ *    GTH QPLL after the Si5328 refclk reconfiguration glitch. Flag 0 =
+ *    GPIO_ACTIVE_HIGH.
+ *  - sfp: links each MAC to its SFP cage descriptor so phylink only
+ *    brings up cages that have a module installed.
+ *  - local-mac-address: ports 1-3 get fixed MACs here; port 0 already
+ *    gets 00:0a:35:00:00:01 from the SDT-generated pl.dtsi. Without
+ *    these the kernel synthesises a random MAC every boot. */
+&xxv_ethernet_0 {
+        qpllreset-gpios = <&axi_gpio_qpllrst 0 0>;
+        sfp = <&sfp_eth0>;
+};
+
+&xxv_ethernet_0_1 {
+        qpllreset-gpios = <&axi_gpio_qpllrst 0 0>;
+        sfp = <&sfp_eth1>;
+        local-mac-address = [00 0a 35 00 00 02];
+};
+
+&xxv_ethernet_0_2 {
+        qpllreset-gpios = <&axi_gpio_qpllrst 0 0>;
+        sfp = <&sfp_eth2>;
+        local-mac-address = [00 0a 35 00 00 03];
+};
+
+&xxv_ethernet_0_3 {
+        qpllreset-gpios = <&axi_gpio_qpllrst 0 0>;
+        sfp = <&sfp_eth3>;
+        local-mac-address = [00 0a 35 00 00 04];
 };

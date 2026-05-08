@@ -169,6 +169,41 @@ create_bd_intf_port -mode Master -vlnv xilinx.com:interface:iic_rtl:1.0 i2c
 connect_bd_intf_net [get_bd_intf_ports i2c] [get_bd_intf_pins axi_iic_0/IIC]
 
 #########################################################
+# Dual-channel AXI GPIO: QPLL reset (out) + SFP MOD_ABS (in)
+#########################################################
+# Channel 1 (1 output): qpllreset_in_0 of xxv_ethernet_0
+#   The XXV's GTH QPLL is shared across the entire quad — one reset bit
+#   covers all 4 ports. The kernel xilinx_axienet driver pulses this bit
+#   inside axienet_device_reset() to re-lock the QPLL after the Si5328
+#   refclk is glitched by mid-boot I2C reprogramming. Driven by the DT
+#   property "qpllreset-gpios" on every xxv_ethernet_* node.
+#
+# Channel 2 (4 inputs): SFP MOD_ABS for slots 0..3 (active-low: 0 = module
+#   present, 1 = absent). Read by the kernel SFP framework via the
+#   "mod-def0-gpios" property on each sfp-eth* DT node so phylink only
+#   tries to bring up cages that have a module installed — empty cages
+#   stay quiet instead of flapping the in-band-status link state.
+#
+# Linux gpiochip line indices (set by xlnx,gpio-width + xlnx,gpio2-width):
+#   0     = qpllreset (Channel 1, bit 0)
+#   1..4  = mod_abs[0..3] (Channel 2, bits 0..3)
+
+create_bd_cell -type ip -vlnv xilinx.com:ip:axi_gpio axi_gpio_qpllrst
+set_property -dict [list \
+  CONFIG.C_GPIO_WIDTH {1} \
+  CONFIG.C_ALL_OUTPUTS {1} \
+  CONFIG.C_DOUT_DEFAULT {0x00000000} \
+  CONFIG.C_IS_DUAL {1} \
+  CONFIG.C_GPIO2_WIDTH {4} \
+  CONFIG.C_ALL_INPUTS_2 {1} \
+] [get_bd_cells axi_gpio_qpllrst]
+
+lappend hpm0_lpd_ports [list "axi_gpio_qpllrst/S_AXI" "zynq_ultra_ps_e_0/pl_clk0" "rst_ps_100m/peripheral_aresetn"]
+connect_bd_net [get_bd_pins zynq_ultra_ps_e_0/pl_clk0] [get_bd_pins axi_gpio_qpllrst/s_axi_aclk]
+connect_bd_net [get_bd_pins rst_ps_100m/peripheral_aresetn] [get_bd_pins axi_gpio_qpllrst/s_axi_aresetn]
+connect_bd_net [get_bd_pins axi_gpio_qpllrst/gpio_io_o] [get_bd_pins xxv_ethernet_0/qpllreset_in_0]
+
+#########################################################
 # SFP ports
 #########################################################
 #
@@ -528,6 +563,45 @@ if {$target == "zcu106_hpc1"} {
   connect_bd_net [get_bd_pins const_high/dout] [get_bd_pins unused_sfp_port3/rx_los]
   connect_bd_net [get_bd_pins const_high/dout] [get_bd_pins unused_sfp_port3/tx_fault]
 }
+
+#########################################################
+# Aggregate SFP MOD_ABS signals into AXI GPIO Channel 2
+#########################################################
+# Each port's mod_abs already drives the LED logic and (for unused ports)
+# the unused_sfp_port block. Tap the same external port and feed it into
+# bit N of a 4-bit concat that drives axi_gpio_qpllrst/gpio2_io_i — the
+# kernel SFP framework reads this via the mod-def0-gpios DT property.
+# Bits whose external port doesn't exist on this target (e.g. zcu106_hpc1
+# port 3) are tied high (active-low → "module absent"), so phylink will
+# never try to bring up that cage.
+
+create_bd_cell -type inline_hdl -vlnv xilinx.com:inline_hdl:ilconcat:1.0 mod_abs_concat
+set_property -dict [list CONFIG.NUM_PORTS {4}] [get_bd_cells mod_abs_concat]
+
+# Lazily create a const_high source the first time we need to tie off a bit.
+set mod_abs_const_high ""
+proc get_mod_abs_const_high {} {
+  global mod_abs_const_high
+  if {$mod_abs_const_high eq ""} {
+    if {[llength [get_bd_cells -quiet const_high]] > 0} {
+      # zcu106_hpc1 already created const_high above; reuse it.
+      set mod_abs_const_high "const_high"
+    } else {
+      create_bd_cell -type inline_hdl -vlnv xilinx.com:inline_hdl:ilconstant const_high_modabs
+      set mod_abs_const_high "const_high_modabs"
+    }
+  }
+  return $mod_abs_const_high
+}
+
+foreach i {0 1 2 3} {
+  if {[llength [get_bd_ports -quiet mod_abs_sfp$i]] > 0} {
+    connect_bd_net [get_bd_ports mod_abs_sfp$i] [get_bd_pins mod_abs_concat/In$i]
+  } else {
+    connect_bd_net [get_bd_pins [get_mod_abs_const_high]/dout] [get_bd_pins mod_abs_concat/In$i]
+  }
+}
+connect_bd_net [get_bd_pins mod_abs_concat/dout] [get_bd_pins axi_gpio_qpllrst/gpio2_io_i]
 
 #########################################################
 # AXI Interfaces and interrupts

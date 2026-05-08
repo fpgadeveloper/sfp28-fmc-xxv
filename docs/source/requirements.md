@@ -44,4 +44,4 @@ For list of the target designs showing the number of SFP28 ports supported, refe
 
 
 
-[Quad SFP28 FMC]: https://ethernetfmc.com/docs/quad-sfp28-fmc/overview/
+[Quad SFP28 FMC]: https://docs.opsero.com/op081/datasheet/overview/

@@ -22,4 +22,4 @@ This is the documentation for the 10G/25G Ethernet reference designs for the Ops
    revision_history
 
 
-.. _Quad SFP28 FMC: https://ethernetfmc.com/docs/quad-sfp28-fmc/overview/
+.. _Quad SFP28 FMC: https://docs.opsero.com/op081/datasheet/overview/
