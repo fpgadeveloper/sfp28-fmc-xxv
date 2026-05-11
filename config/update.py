@@ -141,7 +141,14 @@ def get_petalinux_targets(data):
             # pick up bsp/ports-0/ — its port-config.dtsi only references
             # the xxv_ethernet_0 / sfp_eth0 labels that the SDT generator
             # actually produces. Multi-lane designs get bsp/ports-0123/.
-            lanecfg = 'ports-' + ''.join(design['lanes'])
+            #
+            # Versal designs use a different SDT-generated label scheme
+            # (sfp_port0_xxv_ethernet etc., one XXV IP per port) and need
+            # a Versal-specific port-config.dtsi — bsp/ports-versal-0123/.
+            if design['group'] == 'versal':
+                lanecfg = 'ports-versal-' + ''.join(design['lanes'])
+            else:
+                lanecfg = 'ports-' + ''.join(design['lanes'])
             template = templates[design['group']]
             target = '{}_target := {} {} {} {}'.format(design['label'],template,design['flashsize'],design['flashintf'],lanecfg)
             targets.append(target)
