@@ -175,25 +175,77 @@ sudo screen /dev/ttyUSB0 115200
 
 ## Port configurations
 
-All designs will try to automatically configure the eth0 device on boot, so it can be
-useful to connect the eth0 device to a DHCP router before the hardware is powered-up.
-Note that on Zynq and ZynqMP designs, the eth0 device is connected to the development board's
-Ethernet port and not the Quad SFP28 FMC.
+The PetaLinux image uses persistent interface names with the `endN` prefix
+(the kernel initially registers each NIC as `ethN`, then udev renames it
+on boot). Numbering depends on the order the kernel probes the network
+devices, which is driven by the device tree, so it differs between
+single-port and multi-port designs.
 
-### Zynq UltraScale+ designs
+All interfaces are auto-configured for DHCP at boot, so plugging any of
+them into a DHCP server (a router, or another PC handing out IPs over
+the SFP link) is enough to get an address.
 
-* eth0: Quad SFP28 FMC Port 0
-* eth1: Quad SFP28 FMC Port 1
-* eth2: Quad SFP28 FMC Port 2
-* eth3: Quad SFP28 FMC Port 3
+### Single-port ZynqMP designs (zcu104, zcu106_hpc1)
 
-### Versal designs
+One `xxv_ethernet` channel driving SFP port 0, plus the dev board's
+built-in RJ45 (GEM):
 
-* eth0: GEM0 to Ethernet port of the dev board
-* eth1: Quad SFP28 FMC Port 0
-* eth2: Quad SFP28 FMC Port 1
-* eth3: Quad SFP28 FMC Port 2
-* eth4: Quad SFP28 FMC Port 3
+| Interface | Driver         | Connector              |
+|-----------|----------------|------------------------|
+| `end0`    | macb           | Dev board's RJ45 (GEM) |
+| `end1`    | xilinx_axienet | Quad SFP28 FMC port 0  |
+
+### Four-port ZynqMP designs (uzev, zcu102_hpc0, zcu106_hpc0, zcu111, zcu208, zcu216)
+
+| Interface | Driver         | Connector              |
+|-----------|----------------|------------------------|
+| `end0`    | macb           | Dev board's RJ45 (GEM) |
+| `end1`    | xilinx_axienet | Quad SFP28 FMC port 0  |
+| `eth1`    | xilinx_axienet | Quad SFP28 FMC port 1  |
+| `eth2`    | xilinx_axienet | Quad SFP28 FMC port 2  |
+| `eth3`    | xilinx_axienet | Quad SFP28 FMC port 3  |
+
+> **Note on the mixed `endN` / `ethN` names.** SFP port 0 (and the macb)
+> have their MAC address assigned at netdev-creation time — port 0's
+> comes from the SDT-generated `pl.dtsi` — and so they pick up the
+> persistent `endN` rename. SFP ports 1–3 get their MACs later via the
+> `port-config.dtsi` overlay, after the rename rule has already run, so
+> they keep their kernel-default `ethN` names. The interfaces work
+> identically; only the names differ.
+
+### Versal designs (vck190, vmk180, vpk120, vpk180, vhk158, vek280)
+
+| Interface | Driver         | Connector                                              |
+|-----------|----------------|--------------------------------------------------------|
+| `end0`    | xilinx_axienet | Quad SFP28 FMC port 0                                  |
+| `end1`    | xilinx_axienet | Quad SFP28 FMC port 1                                  |
+| `end2`    | xilinx_axienet | Quad SFP28 FMC port 2                                  |
+| `end3`    | xilinx_axienet | Quad SFP28 FMC port 3                                  |
+| `end4`    | macb           | Dev-board built-in Ethernet (GEM0)                     |
+| `end5`    | macb           | Dev-board built-in Ethernet (GEM1, where present)      |
+
+### Identifying the mapping on a specific board
+
+If the table above doesn't match what you see, you can work it out at
+runtime. `ip -br link` lists the interfaces, and either `ethtool -i
+<name>` or the kernel bring-up messages in `dmesg` will tell you which
+driver is behind each one:
+
+```sh
+$ ip -br link
+end0    DOWN    54:10:ec:ba:b8:7c <NO-CARRIER,BROADCAST,MULTICAST,UP>
+end1    UP      00:0a:35:00:00:01 <BROADCAST,MULTICAST,UP,LOWER_UP>
+eth1    DOWN    00:0a:35:00:00:02 <NO-CARRIER,BROADCAST,MULTICAST,UP>
+lo      UNKNOWN 00:00:00:00:00:00 <LOOPBACK,UP,LOWER_UP>
+
+$ ethtool -i end1 | head -1
+driver: xilinx_axienet      # -> Quad SFP28 FMC port
+
+$ dmesg | grep -E 'renamed from|axienet.*end[0-9]+:.*configuring|macb.*end[0-9]+:.*PHY'
+```
+
+`xilinx_axienet` always means an XXV-Ethernet (Quad SFP28 FMC) port;
+`macb` is the dev board's built-in Ethernet (GEM).
 
 ## Example Usage
 
@@ -338,61 +390,166 @@ rtt min/avg/max/mdev = 0.144/0.155/0.180/0.014 ms
 ### Throughput test with iperf3
 
 `iperf3` is the standard tool for measuring TCP/UDP throughput over a link.
-Run it as a server on one end and a client on the other; the direction of the
-data flow is from client to server by default.
+Run it as a server on one end and a client on the other; data flows from
+client to server by default (use `-R` to reverse).
 
-For the examples below we will use a host PC as the iperf3 server and the
-PetaLinux target as the iperf3 client.
+In the examples below the host PC acts as the iperf3 server and the
+PetaLinux target as the client. The numbers shown were captured on a
+uzev build. Single-stream throughput on these embedded SoCs is
+CPU-bound — the path traverses the kernel TCP/IP stack and the
+single-queue `xilinx_axienet` driver on a Cortex-A53 — so absolute
+figures vary by board with clock speed, DDR bandwidth, and core count.
 
 #### On the host PC (server side)
 
-Install iperf3 (any recent Linux distribution will have it packaged) and start
-it in server mode. The default listening port is 5201.
+Install iperf3 (any recent Linux distribution has it packaged) and start
+it in server mode. The default listening port is 5201; `-B` pins it to a
+specific local address (useful when the host has multiple interfaces, as
+in our PC + SFP28-NIC setup):
 
 ```
 $ sudo apt install iperf3
-$ iperf3 -s
+$ iperf3 -s -B 192.168.1.1
 -----------------------------------------------------------
 Server listening on 5201 (test #1)
 -----------------------------------------------------------
 ```
 
-Make sure the host PC and the target are on the same subnet — for example, the
-host PC has IP 192.168.1.1/24 on its SFP28 NIC, and the target has
-192.168.1.22/24 on `end1`.
+Make sure the host and target are on the same subnet — in this session
+the host has `192.168.1.1/24` on its SFP28 NIC and the uzev got
+`192.168.1.161/24` on `end1` via DHCP from the host (NetworkManager
+shared mode).
 
 #### On the PetaLinux target (client side)
 
-Run iperf3 in client mode, pointing it at the host's IP address. Use `-t` to
-set the test duration in seconds and `-i` to set the per-interval reporting
-period.
+Run iperf3 in client mode, pointing it at the host's IP. `-t` sets the
+test duration in seconds, `-i` the per-interval reporting period.
+
+**TCP, target → host:**
 
 ```
-zcu102-sfp28-2025-2:~$ iperf3 -c 192.168.1.1 -t 10 -i 1
+uzev-sfp28-2025-2:~$ iperf3 -c 192.168.1.1 -t 10 -i 1
 Connecting to host 192.168.1.1, port 5201
-[  5] local 192.168.1.22 port 41284 connected to 192.168.1.1 port 5201
+[  5] local 192.168.1.161 port 51276 connected to 192.168.1.1 port 5201
 [ ID] Interval           Transfer     Bitrate         Retr  Cwnd
-[  5]   0.00-1.00   sec  1.10 GBytes  9.42 Gbits/sec    0    624 KBytes
-[  5]   1.00-2.00   sec  1.10 GBytes  9.41 Gbits/sec    0    624 KBytes
-[  5]   2.00-3.00   sec  1.10 GBytes  9.41 Gbits/sec    0    624 KBytes
-[  5]   3.00-4.00   sec  1.10 GBytes  9.41 Gbits/sec    0    624 KBytes
-[  5]   4.00-5.00   sec  1.10 GBytes  9.41 Gbits/sec    0    624 KBytes
-[  5]   5.00-6.00   sec  1.10 GBytes  9.41 Gbits/sec    0    624 KBytes
-[  5]   6.00-7.00   sec  1.10 GBytes  9.41 Gbits/sec    0    624 KBytes
-[  5]   7.00-8.00   sec  1.10 GBytes  9.41 Gbits/sec    0    624 KBytes
-[  5]   8.00-9.00   sec  1.10 GBytes  9.41 Gbits/sec    0    624 KBytes
-[  5]   9.00-10.00  sec  1.10 GBytes  9.41 Gbits/sec    0    624 KBytes
+[  5]   0.00-1.00   sec   194 MBytes  1.63 Gbits/sec    0    707 KBytes
+[  5]   1.00-2.00   sec   187 MBytes  1.57 Gbits/sec    0    793 KBytes
+[  5]   2.00-3.00   sec   193 MBytes  1.62 Gbits/sec    0   1.31 MBytes
+[  5]   3.00-4.00   sec   186 MBytes  1.56 Gbits/sec    0   1.61 MBytes
+[  5]   4.00-5.00   sec   147 MBytes  1.23 Gbits/sec    0   1.77 MBytes
+[  5]   5.00-6.00   sec   186 MBytes  1.56 Gbits/sec    0   2.19 MBytes
+[  5]   6.00-7.00   sec   200 MBytes  1.68 Gbits/sec    0   2.34 MBytes
+[  5]   7.00-8.00   sec   167 MBytes  1.40 Gbits/sec    0   2.49 MBytes
+[  5]   8.00-9.00   sec   193 MBytes  1.62 Gbits/sec    0   2.80 MBytes
+[  5]   9.00-10.02  sec   174 MBytes  1.43 Gbits/sec    0   3.30 MBytes
 - - - - - - - - - - - - - - - - - - - - - - - - -
 [ ID] Interval           Transfer     Bitrate         Retr
-[  5]   0.00-10.00  sec  10.9 GBytes  9.41 Gbits/sec    0          sender
-[  5]   0.00-10.00  sec  10.9 GBytes  9.41 Gbits/sec         receiver
+[  5]   0.00-10.02  sec  1.86 GBytes  1.59 Gbits/sec    0          sender
+[  5]   0.00-10.02  sec  1.86 GBytes  1.59 Gbits/sec               receiver
 
-iperf test Complete. Summary Results:
+iperf Done.
 ```
 
-To measure throughput in the opposite direction (host PC → target), add the
-`-R` flag on the client side. To exercise UDP instead of TCP, add `-u` and
-specify a target rate with `-b`, for example `-b 10G` to push 10 Gbps.
+Sustained throughput is approximately 1.6 Gbit/s with no retransmits.
+The link layer is stable; the SoC is the limiting factor.
+
+**TCP, host → target** (add `-R`):
+
+```
+uzev-sfp28-2025-2:~$ iperf3 -c 192.168.1.1 -t 10 -i 1 -R
+...
+[ ID] Interval           Transfer     Bitrate         Retr
+[  5]   0.00-10.00  sec  1.49 GBytes  1.28 Gbits/sec  630         sender
+[  5]   0.00-10.00  sec  1.49 GBytes  1.28 Gbits/sec              receiver
+```
+
+Throughput in the reverse direction is approximately 1.3 Gbit/s with
+630 retransmits. The host PC's NIC drives the link faster than the
+uzev's receive path can sustain; packets dropped when the A53 falls
+behind trigger TCP retransmission.
+
+**UDP, target → host at line-rate request:**
+
+```
+uzev-sfp28-2025-2:~$ iperf3 -c 192.168.1.1 -t 10 -i 1 -u -b 10G
+...
+[ ID] Interval           Transfer     Bitrate         Jitter    Lost/Total Datagrams
+[  5]   0.00-10.00  sec  1.07 GBytes   919 Mbits/sec  0.000 ms  0/793232 (0%)  sender
+[  5]   0.00-10.00  sec  1.07 GBytes   919 Mbits/sec  0.010 ms  0/793232 (0%)  receiver
+```
+
+The uzev cannot generate UDP traffic at 10 Gbit/s. The sender caps at
+approximately 920 Mbit/s and all transmitted datagrams are received
+intact (0% loss).
+
+**UDP, host → target at line-rate request** (`-u -b 10G -R`):
+
+```
+uzev-sfp28-2025-2:~$ iperf3 -c 192.168.1.1 -t 10 -i 1 -u -b 10G -R
+...
+[ ID] Interval           Transfer     Bitrate         Jitter    Lost/Total Datagrams
+[  5]   0.00-10.00  sec  4.50 GBytes  3.87 Gbits/sec  0.000 ms  0/3340532 (0%)       sender
+[  5]   0.00-10.00  sec  1.39 GBytes  1.20 Gbits/sec  0.020 ms  2306431/3338654 (69%) receiver
+```
+
+The host PC's NIC transmits at 3.87 Gbit/s; the uzev's receive path can
+sustain approximately 1.2 Gbit/s and drops the remaining ~69% of
+datagrams (2,306,431 of 3,338,654) at the kernel RX path. UDP has no
+flow control, so the sender is unaffected by receiver-side loss.
+
+#### Where the bottleneck is and what the solution is
+
+The link layer operates at 10 Gbit/s, as confirmed by `ethtool end1`
+(`Speed: 10000Mb/s`, `Link detected: yes`). The single-stream iperf3
+ceiling is set by the embedded CPU: each packet traverses the kernel
+TCP/IP stack and the `xilinx_axienet` driver's single-queue DMA path
+before reaching (or leaving) DDR. On a Cortex-A53 the resulting limit
+is approximately 1.5 Gbit/s of single-stream TCP, independent of link
+speed.
+
+Designs that require sustained 10G or 25G throughput on these SoCs
+structure the datapath as a split control / data plane, removing the
+CPU from the bulk-traffic path:
+
+* **Data plane in fabric.** Incoming packets are parsed at the MAC's
+  AXI-Stream interface by a packet classifier in PL, typically matching
+  on Ethernet / IP / UDP header fields, VLAN tag, or a protocol-specific
+  marker. Matched flows are routed directly to fabric processing
+  blocks. Typical destinations include:
+
+  * raw sensor or ADC data into a DSP pipeline (filtering, FFT,
+    decimation), then to DDR via a high-throughput DMA or back out a
+    second MAC;
+  * video frames into a Vivado / Vitis Vision pipeline (debayer,
+    scale, encode);
+  * application-specific compute kernels (cryptography, ML inference,
+    protocol offload). On Versal, bulk traffic is typically handed
+    off from PL to an AI Engine array; on ZynqMP it remains in PL or
+    is processed by an HLS-generated accelerator.
+
+  This traffic does not transit the PS. Each of the four SFP28 ports
+  has its own `xxv_ethernet` IP and GT channel, and fabric processing
+  pipelines are sized for line-rate operation by construction, so all
+  four ports can sustain wire-rate concurrently.
+
+* **Control plane on the CPU.** The classifier forwards a small subset
+  of traffic — ARP, ICMP, DHCP, SSH, management protocols, application
+  configuration — up the MAC's AXI-MM DMA path to the kernel. This
+  traffic is low-volume and irregular, and the Linux network stack
+  handles it without difficulty.
+
+The Quad SFP28 FMC and the per-port `xxv_ethernet` IPs provide the
+building blocks; the design choice is the partitioning of work between
+fabric and PS. With this architecture a ZynqMP or Versal device can
+sustain all four ports at 10G or 25G simultaneously. The iperf3 results
+above represent the worst case, in which all traffic transits the CPU.
+
+For benchmarking a fabric datapath, iperf3 over the Linux network
+stack is not appropriate; an AXI-Stream loopback in PL with hardware
+counters is the meaningful measurement.
+
+An example design demonstrating this split control / data-plane
+architecture on the Quad SFP28 FMC is currently in development.
 
 
 [Quad SFP28 FMC]: https://docs.opsero.com/op081/datasheet/overview/
