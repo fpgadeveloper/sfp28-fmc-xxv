@@ -26,7 +26,6 @@ it.
 │   └── bsp/                   <- Per-board and per-port-config BSP fragments
 │       ├── uzev/, vck190/, …  <-   board-specific overlays
 │       └── ports-0/, ports-0123/, ports-versal-0123/   <- port-config overlays
-├── submodules/                <- Vendor board definition files (BDFs)
 └── Vivado/
     ├── Makefile               <- Vivado build orchestration
     ├── scripts/

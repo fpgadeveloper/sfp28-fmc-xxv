@@ -90,18 +90,6 @@ require a license to generate a bitstream with the AMD Xilinx tools.
 [ZCU216]: https://www.xilinx.com/zcu216
 <!-- updater end -->
 
-### AUBoard board files
-
-The board definition files for the AUBoard are not currently included in the AMD Xilinx Board Store.
-To enable Vivado to recognize this board, the required board files have been included in this
-repository as a Git submodule (`submodules/avnet-bdf`), which is a fork of
-[Avnet's BDF repository](https://github.com/Avnet/bdf). When cloning this repo, use the `--recursive`
-flag to ensure the board files are downloaded:
-
-```
-git clone --recursive <repo-url>
-```
-
 Notes:
 1. The Vivado Edition column indicates which designs are supported by the Vivado *Standard* Edition, the
    FREE edition which can be used without a license. Vivado *Enterprise* Edition requires
