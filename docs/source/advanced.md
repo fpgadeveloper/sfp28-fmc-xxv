@@ -174,7 +174,8 @@ If the change applies only to some targets in the family, wrap
 the additions in the appropriate per-board conditional block (for
 example `if {$is_vpk120 || $is_vpk180} { … }`).
 
-```{note} On Versal (GTY/GTYP), `bd_versal.tcl` explicitly forces
+```{note}
+On Versal (GTY/GTYP), `bd_versal.tcl` explicitly forces
 `TX_PLL_TYPE` / `RX_PLL_TYPE` to `RPLL` on the GT_Quad PROT0_LR0
 settings. Vivado 2025.2's GT_Quad IP auto-selects `LCPLL` for the
 10G/25G Ethernet preset, which prevents block lock on these designs;
