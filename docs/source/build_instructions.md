@@ -44,8 +44,8 @@ Notes:
 
 ## Windows users
 
-Windows users will be able to build the Vivado projects and compile the standalone applications,
-however Linux is required to build the PetaLinux projects. 
+Windows users will be able to build the Vivado projects,
+however Linux is required to build the PetaLinux projects.
 
 ```{tip} If you wish to build the PetaLinux projects,
 we recommend that you build the entire project (including the Vivado project) on a machine (either 

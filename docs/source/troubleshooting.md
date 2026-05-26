@@ -2,6 +2,31 @@
 
 ## Build failures
 
+### PetaLinux build fails with `bitbake petalinux-image-minimal failed` and sstate fetch errors
+
+If a `make petalinux TARGET=<board>` run ends with errors like
+
+```
+ERROR: <package>-<ver>-r0 do_..._setscene: Fetcher failure: Unable to find file file://.../sstate:...
+[ERROR] Command bitbake petalinux-image-minimal failed
+```
+
+the actual build is not broken. These `_setscene` errors come from
+bitbake trying to pull prebuilt artifacts from the public Xilinx
+sstate-cache mirror, which occasionally returns 404 for individual
+packages. Bitbake falls back to building those packages locally and
+succeeds, but still exits non-zero because of the failed fetches —
+so the Makefile stops before the `petalinux-package` step that
+produces `BOOT.BIN`.
+
+**Fix: just re-run the same command.** The second attempt finds the
+missing packages in the local sstate cache (populated by the first
+run) and completes cleanly, producing `BOOT.BIN`. The reference
+design itself is fine; this is a transient issue with the public
+mirror.
+
+### General build issues
+
 Check the following if the project fails to build or generate a bitstream:
 
 1. **Are you using the correct version of Vivado for this version of the repository?**   
@@ -23,11 +48,11 @@ Check the following if the project fails to build or generate a bitstream:
 Check the following if you are unable to get ports working in PetaLinux.
 
 1. **Check the interface-to-port assignment for your design**   
-   The assignment of interfaces (eg. eth0, eth1, eth2, etc) to ports (eg. Ethernet FMC Max port 0, 1, 2 and 3) is specific to the design that
-   you are using. The interface to port assignment is documented [here](https://sfp28-xxv.ethernetfmc.com/en/latest/petalinux.html#port-configurations).
+   The assignment of network interfaces (eg. `end0`, `end1`, `eth2`, etc) to physical Quad SFP28 FMC ports (port 0, 1, 2 and 3) is specific to the design that
+   you are using. The interface-to-port assignment is documented [here](https://sfp28-xxv.ethernetfmc.com/en/latest/petalinux.html#port-configurations).
 
 2. **Each port must be assigned to a different subnet**   
-   If you assign interface eth0 to IP address 192.168.1.10, then you must use a different subnet for the IP address of eth1, eth2 and eth3.
+   If you assign one interface to IP address 192.168.1.10, then you must use a different subnet for the IP address of the other interfaces.
    Multiple ports that are managed under Linux must be assigned to different subnets, or they will not work.
-   An example address assignment would be eth0=192.168.1.10, eth1=192.168.2.10, eth2=192.168.3.10, eth3=192.168.4.10.
+   An example address assignment would be `end1`=192.168.1.10, `eth2`=192.168.2.10, `eth3`=192.168.3.10, `eth4`=192.168.4.10 on a four-port AMD ZCU* design.
 

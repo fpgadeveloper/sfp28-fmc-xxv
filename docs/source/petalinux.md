@@ -6,7 +6,7 @@ of the repository.
 ## Requirements
 
 To build the PetaLinux projects, you will need a physical or virtual machine running one of the 
-[supported Linux distributions] as well as the Vitis Core Development Kit installed.
+[supported Linux distributions] with Vivado 2025.2 and PetaLinux Tools 2025.2 installed.
 
 ```{attention} You cannot build the PetaLinux projects in the Windows operating system. Windows
 users are advised to use a Linux virtual machine to build the PetaLinux projects.
@@ -195,7 +195,10 @@ built-in RJ45 (GEM):
 | `end0`    | macb           | Dev board's RJ45 (GEM) |
 | `end1`    | xilinx_axienet | Quad SFP28 FMC port 0  |
 
-### Four-port ZynqMP designs (uzev, zcu102_hpc0, zcu106_hpc0, zcu111, zcu208, zcu216)
+### Four-port ZynqMP designs (uzev)
+
+On the `uzev`, the four `xxv_ethernet` channels probe before the macb,
+so the macb consumes the last `ethN` slot:
 
 | Interface | Driver         | Connector              |
 |-----------|----------------|------------------------|
@@ -205,13 +208,30 @@ built-in RJ45 (GEM):
 | `eth2`    | xilinx_axienet | Quad SFP28 FMC port 2  |
 | `eth3`    | xilinx_axienet | Quad SFP28 FMC port 3  |
 
+### Four-port ZynqMP designs (zcu102_hpc0, zcu106_hpc0, zcu111, zcu208, zcu216)
+
+On the AMD ZCU* boards, the macb probes first (taking `eth0`) and the
+SFP28 channels follow, so the numbering for ports 1–3 is offset by one
+compared to the `uzev`:
+
+| Interface | Driver         | Connector              |
+|-----------|----------------|------------------------|
+| `end0`    | macb           | Dev board's RJ45 (GEM) |
+| `end1`    | xilinx_axienet | Quad SFP28 FMC port 0  |
+| `eth2`    | xilinx_axienet | Quad SFP28 FMC port 1  |
+| `eth3`    | xilinx_axienet | Quad SFP28 FMC port 2  |
+| `eth4`    | xilinx_axienet | Quad SFP28 FMC port 3  |
+
 > **Note on the mixed `endN` / `ethN` names.** SFP port 0 (and the macb)
 > have their MAC address assigned at netdev-creation time — port 0's
 > comes from the SDT-generated `pl.dtsi` — and so they pick up the
 > persistent `endN` rename. SFP ports 1–3 get their MACs later via the
 > `port-config.dtsi` overlay, after the rename rule has already run, so
 > they keep their kernel-default `ethN` names. The interfaces work
-> identically; only the names differ.
+> identically; only the names differ. Which `ethN` numbers the
+> non-renamed ports land on depends on the order the kernel probed
+> the netdevs (driven by the device tree), which is why `uzev` differs
+> from the AMD ZCU* boards above.
 
 ### Versal designs (vck190, vmk180, vpk120, vpk180, vhk158, vek280)
 
@@ -235,13 +255,15 @@ driver is behind each one:
 $ ip -br link
 end0    DOWN    54:10:ec:ba:b8:7c <NO-CARRIER,BROADCAST,MULTICAST,UP>
 end1    UP      00:0a:35:00:00:01 <BROADCAST,MULTICAST,UP,LOWER_UP>
-eth1    DOWN    00:0a:35:00:00:02 <NO-CARRIER,BROADCAST,MULTICAST,UP>
+eth2    DOWN    00:0a:35:00:00:02 <NO-CARRIER,BROADCAST,MULTICAST,UP>
+eth3    DOWN    00:0a:35:00:00:03 <NO-CARRIER,BROADCAST,MULTICAST,UP>
+eth4    DOWN    00:0a:35:00:00:04 <NO-CARRIER,BROADCAST,MULTICAST,UP>
 lo      UNKNOWN 00:00:00:00:00:00 <LOOPBACK,UP,LOWER_UP>
 
 $ ethtool -i end1 | head -1
 driver: xilinx_axienet      # -> Quad SFP28 FMC port
 
-$ dmesg | grep -E 'renamed from|axienet.*end[0-9]+:.*configuring|macb.*end[0-9]+:.*PHY'
+$ dmesg | grep -E 'renamed from|axienet.*(end|eth)[0-9]+:.*configuring|macb.*end[0-9]+:.*PHY'
 ```
 
 `xilinx_axienet` always means an XXV-Ethernet (Quad SFP28 FMC) port;

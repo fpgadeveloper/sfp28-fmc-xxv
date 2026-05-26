@@ -174,6 +174,16 @@ If the change applies only to some targets in the family, wrap
 the additions in the appropriate per-board conditional block (for
 example `if {$is_vpk120 || $is_vpk180} { … }`).
 
+```{note} On Versal (GTY/GTYP), `bd_versal.tcl` explicitly forces
+`TX_PLL_TYPE` / `RX_PLL_TYPE` to `RPLL` on the GT_Quad PROT0_LR0
+settings. Vivado 2025.2's GT_Quad IP auto-selects `LCPLL` for the
+10G/25G Ethernet preset, which prevents block lock on these designs;
+if you regenerate the GT_Quad customisation or copy presets from
+another design, make sure the PLL type stays at `RPLL`. The ZynqMP
+GTH XXV-Ethernet IP uses the shared QPLL and has no equivalent
+choice in the BD.
+```
+
 Once the script is edited, delete any existing per-target Vivado
 project directory (`rm -rf Vivado/<target>`) and re-run the Vivado
 build through the Makefile:
@@ -412,7 +422,27 @@ the stock one?"* — it is what to re-apply if you ever do that.
   `xxv_ethernet_*` node in `bsp/ports-0*/port-config.dtsi`.
 * **DMA-engine kernel configs**: `CONFIG_XILINX_DMA_ENGINES`,
   `CONFIG_XILINX_DPDMA`, `CONFIG_XILINX_ZYNQMP_DMA`.
-* **U-Boot patches** for UBIFS distroboot support.
+* **U-Boot patch `0001-ubifs-distroboot-support.patch`** in
+  `u-boot/files/`, registered via `SRC_URI:append` in the bbappend.
+  Adds UBIFS distroboot fallback to the ZynqMP U-Boot bootcmd.
+
+### ZCU104 BSP (additional)
+
+* **FSBL patch `zcu104_vadj_fsbl.patch`** in
+  `recipes-bsp/embeddedsw/files/`, staged into the
+  `xlnx-embeddedsw` recipe by
+  `fsbl-firmware_%.bbappend`. The patch fixes the FSBL's FMC VADJ
+  autodetect on the ZCU104: the stock 2025.2 FSBL reads from the
+  carrier-board EEPROM (I2C addr `0x54`) instead of the FMC EEPROM
+  (`0x50`), selects the wrong MUX channel, and reads only 32 bytes,
+  which is too few to reach the VADJ voltage record. Without this
+  patch VADJ is never programmed on the ZCU104 and the Quad SFP28 FMC
+  does not power up cleanly. The bbappend uses `apply=no` and inserts
+  a manual `do_apply_vadj_patch` task between `do_copy_shared_src`
+  and `do_configure` — this is necessary because 2025.2's
+  `xlnx-embeddedsw.bbclass` runs `do_patch` *before*
+  `do_copy_shared_src`, so SRC_URI-attached patches would otherwise
+  be applied to an empty workdir.
 
 ### UltraZed-EV (uzev) BSP
 
