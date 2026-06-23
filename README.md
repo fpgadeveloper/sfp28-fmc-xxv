@@ -39,41 +39,41 @@ require a license to generate a bitstream with the AMD Xilinx tools.
 <!-- updater start -->
 ### 10G designs
 
-| Target board          | Target design      | Link speeds <br> supported | SFP28 ports | FMC Slot    | Vivado<br> Edition |
-|-----------------------|--------------------|------------|-------------|-------------|-------|
-| [UltraZed-EV Carrier] | `uzev`             | 10G        | 4x          | HPC         | Standard :free: |
-| [VCK190]              | `vck190_fmcp1`     | 10G        | 4x          | FMCP1       | Enterprise |
-| [VCK190]              | `vck190_fmcp2`     | 10G        | 4x          | FMCP2       | Enterprise |
-| [VEK280]              | `vek280`           | 10G        | 4x          | FMCP        | Enterprise |
-| [VHK158]              | `vhk158`           | 10G        | 4x          | FMCP        | Enterprise |
-| [VMK180]              | `vmk180_fmcp1`     | 10G        | 4x          | FMCP1       | Enterprise |
-| [VMK180]              | `vmk180_fmcp2`     | 10G        | 4x          | FMCP2       | Enterprise |
-| [VPK120]              | `vpk120`           | 10G        | 4x          | FMCP        | Enterprise |
-| [VPK180]              | `vpk180`           | 10G        | 4x          | FMCP        | Enterprise |
-| [ZCU102]              | `zcu102_hpc0`      | 10G        | 4x          | HPC0        | Enterprise |
-| [ZCU102]              | `zcu102_hpc1`      | 10G        | 4x          | HPC1        | Enterprise |
-| [ZCU104]              | `zcu104`           | 10G        | 1x          | LPC         | Standard :free: |
-| [ZCU106]              | `zcu106_hpc0`      | 10G        | 4x          | HPC0        | Standard :free: |
-| [ZCU106]              | `zcu106_hpc1`      | 10G        | 1x          | HPC1        | Standard :free: |
-| [ZCU111]              | `zcu111`           | 10G        | 4x          | FMCP        | Enterprise |
-| [ZCU208]              | `zcu208`           | 10G        | 4x          | FMCP        | Enterprise |
-| [ZCU216]              | `zcu216`           | 10G        | 4x          | FMCP        | Enterprise |
+| Target board          | Target design      | Link speeds <br> supported | SFP28 ports | FMC Slot    | Vivado<br> Edition | IP<br>License |
+|-----------------------|--------------------|------------|-------------|-------------|-------|-------|
+| [UltraZed-EV Carrier] | `uzev`             | 10G        | 4x          | HPC         | Standard :free: | Required |
+| [VCK190]              | `vck190_fmcp1`     | 10G        | 4x          | FMCP1       | Enterprise | Required |
+| [VCK190]              | `vck190_fmcp2`     | 10G        | 4x          | FMCP2       | Enterprise | Required |
+| [VEK280]              | `vek280`           | 10G        | 4x          | FMCP        | Enterprise | Required |
+| [VHK158]              | `vhk158`           | 10G        | 4x          | FMCP        | Enterprise | Required |
+| [VMK180]              | `vmk180_fmcp1`     | 10G        | 4x          | FMCP1       | Enterprise | Required |
+| [VMK180]              | `vmk180_fmcp2`     | 10G        | 4x          | FMCP2       | Enterprise | Required |
+| [VPK120]              | `vpk120`           | 10G        | 4x          | FMCP        | Enterprise | Required |
+| [VPK180]              | `vpk180`           | 10G        | 4x          | FMCP        | Enterprise | Required |
+| [ZCU102]              | `zcu102_hpc0`      | 10G        | 4x          | HPC0        | Enterprise | Required |
+| [ZCU102]              | `zcu102_hpc1`      | 10G        | 4x          | HPC1        | Enterprise | Required |
+| [ZCU104]              | `zcu104`           | 10G        | 1x          | LPC         | Standard :free: | Required |
+| [ZCU106]              | `zcu106_hpc0`      | 10G        | 4x          | HPC0        | Standard :free: | Required |
+| [ZCU106]              | `zcu106_hpc1`      | 10G        | 1x          | HPC1        | Standard :free: | Required |
+| [ZCU111]              | `zcu111`           | 10G        | 4x          | FMCP        | Enterprise | Required |
+| [ZCU208]              | `zcu208`           | 10G        | 4x          | FMCP        | Enterprise | Required |
+| [ZCU216]              | `zcu216`           | 10G        | 4x          | FMCP        | Enterprise | Required |
 
 ### 25G designs
 
-| Target board          | Target design      | Link speeds <br> supported | SFP28 ports | FMC Slot    | Vivado<br> Edition |
-|-----------------------|--------------------|------------|-------------|-------------|-------|
-| [VCK190]              | `vck190_fmcp1_25g` | 25G        | 4x          | FMCP1       | Enterprise |
-| [VCK190]              | `vck190_fmcp2_25g` | 25G        | 4x          | FMCP2       | Enterprise |
-| [VEK280]              | `vek280_25g`       | 25G        | 4x          | FMCP        | Enterprise |
-| [VHK158]              | `vhk158_25g`       | 25G        | 4x          | FMCP        | Enterprise |
-| [VMK180]              | `vmk180_fmcp1_25g` | 25G        | 4x          | FMCP1       | Enterprise |
-| [VMK180]              | `vmk180_fmcp2_25g` | 25G        | 4x          | FMCP2       | Enterprise |
-| [VPK120]              | `vpk120_25g`       | 25G        | 4x          | FMCP        | Enterprise |
-| [VPK180]              | `vpk180_25g`       | 25G        | 4x          | FMCP        | Enterprise |
-| [ZCU111]              | `zcu111_25g`       | 25G        | 4x          | FMCP        | Enterprise |
-| [ZCU208]              | `zcu208_25g`       | 25G        | 4x          | FMCP        | Enterprise |
-| [ZCU216]              | `zcu216_25g`       | 25G        | 4x          | FMCP        | Enterprise |
+| Target board          | Target design      | Link speeds <br> supported | SFP28 ports | FMC Slot    | Vivado<br> Edition | IP<br>License |
+|-----------------------|--------------------|------------|-------------|-------------|-------|-------|
+| [VCK190]              | `vck190_fmcp1_25g` | 25G        | 4x          | FMCP1       | Enterprise | Required |
+| [VCK190]              | `vck190_fmcp2_25g` | 25G        | 4x          | FMCP2       | Enterprise | Required |
+| [VEK280]              | `vek280_25g`       | 25G        | 4x          | FMCP        | Enterprise | Required |
+| [VHK158]              | `vhk158_25g`       | 25G        | 4x          | FMCP        | Enterprise | Required |
+| [VMK180]              | `vmk180_fmcp1_25g` | 25G        | 4x          | FMCP1       | Enterprise | Required |
+| [VMK180]              | `vmk180_fmcp2_25g` | 25G        | 4x          | FMCP2       | Enterprise | Required |
+| [VPK120]              | `vpk120_25g`       | 25G        | 4x          | FMCP        | Enterprise | Required |
+| [VPK180]              | `vpk180_25g`       | 25G        | 4x          | FMCP        | Enterprise | Required |
+| [ZCU111]              | `zcu111_25g`       | 25G        | 4x          | FMCP        | Enterprise | Required |
+| [ZCU208]              | `zcu208_25g`       | 25G        | 4x          | FMCP        | Enterprise | Required |
+| [ZCU216]              | `zcu216_25g`       | 25G        | 4x          | FMCP        | Enterprise | Required |
 
 [UltraZed-EV Carrier]: https://www.xilinx.com/products/boards-and-kits/1-1s78dxb.html
 [VCK190]: https://www.xilinx.com/vck190
@@ -108,50 +108,58 @@ below outlines the corresponding applications available in each environment:
 
 ## Build instructions
 
-Clone the repo:
+Clone the repo and change into its directory:
 ```
 git clone https://github.com/fpgadeveloper/sfp28-fmc-xxv.git
+cd sfp28-fmc-xxv
 ```
 
-Source Vivado and PetaLinux tools:
+### Cross-platform build runner
+
+All builds are driven by `build.py` at the repo root, on both Windows
+(git bash) and Linux. The `build.sh` / `build.bat` shim finds a suitable
+Python 3 automatically (including the one bundled with the AMD tools).
+Pick a target design label from the tables above (or run `./build.sh
+list`), then run the build command for the stage(s) you want — each
+command builds whatever it depends on automatically and skips anything
+already built. On Windows without git bash, run the same commands from
+Command Prompt or PowerShell using `build.bat` (e.g. `build.bat xsa
+--target <target>`).
+
+You don't need to source the AMD tools first — the build runner finds
+Vivado, Vitis and PetaLinux automatically in their standard install
+locations and sets up the environment each stage needs. If your tools
+are installed somewhere non-standard and the runner can't find them,
+source the tool settings yourself before running the build.
+
+#### Build the Vivado project (bitstream + XSA)
 
 ```
-source <path-to-petalinux>/2025.2/settings.sh
-source <path-to-xilinx-tools>/2025.2/Vivado/settings64.sh
+./build.sh xsa --target <target>
 ```
 
-Build all (Vivado project and PetaLinux):
+#### Build PetaLinux (Linux only)
 
 ```
-cd sfp28-fmc-xxv/PetaLinux
-make petalinux TARGET=zcu106_hpc0
+./build.sh petalinux --target <target>
 ```
 
-## Troubleshooting
+#### Build everything
 
-### PetaLinux build fails with `bitbake petalinux-image-minimal failed` and sstate fetch errors
-
-If a `make petalinux TARGET=<board>` run ends with errors like
+Builds all of the above that the target supports, then gathers the boot
+images into `bootimages/*.zip`:
 
 ```
-ERROR: <package>-<ver>-r0 do_..._setscene: Fetcher failure: Unable to find file file://.../sstate:...
-[ERROR] Command bitbake petalinux-image-minimal failed
+./build.sh all --target <target>
+./build.sh all --target all          # every target in the repo
 ```
 
-the actual build is not broken. These `_setscene` errors come from
-bitbake trying to pull prebuilt artifacts from the public Xilinx
-sstate-cache mirror, which occasionally returns 404 for individual
-packages. Bitbake falls back to building those packages locally and
-succeeds, but still exits non-zero because of the failed fetches —
-so the Makefile stops before the `petalinux-package` step that
-produces `BOOT.BIN`.
-
-**Fix: just re-run the same command.** The second attempt finds the
-missing packages in the local sstate cache (populated by the first
-run) and completes cleanly, producing `BOOT.BIN`. The reference
-design itself is fine; this is a transient issue with the public
-mirror.
-
+Also available: `status`, `clean`, `project` — see
+`./build.sh --help`. On Windows, the PetaLinux and Yocto stages require a
+Linux machine; the runner says so and prints the hand-off command. The
+legacy `make` interface still works on Linux (each Makefile now wraps
+`build.sh`) but is deprecated and will be removed at the next version
+update.
 
 ## Contribute
 
