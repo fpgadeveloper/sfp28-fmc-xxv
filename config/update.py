@@ -96,7 +96,7 @@ def get_vivado_build_targets(data):
             template = templates[design['group']]
             lanes = '{'
             for lane in design['lanes']:
-                lanes += ' ' + lane
+                lanes += ' ' + str(lane)
             lanes += ' }'
             target = 'dict set target_dict {} {{ {} {} {} {} "{}" }}'.format(design['label'],design['url'],design['boardname'],
                 template,lanes,design['linkspeed'])
@@ -122,10 +122,7 @@ def get_petalinux_targets(data):
             # Versal designs use a different SDT-generated label scheme
             # (sfp_port0_xxv_ethernet etc., one XXV IP per port) and need
             # a Versal-specific port-config.dtsi — bsp/ports-versal-0123/.
-            if design['group'] == 'versal':
-                lanecfg = 'ports-versal-' + ''.join(design['lanes'])
-            else:
-                lanecfg = 'ports-' + ''.join(design['lanes'])
+            lanecfg = design.get('portcfg', '')
             template = templates[design['group']]
             target = '{}_target := {} {} {} {}'.format(design['label'],template,design['flashsize'],design['flashintf'],lanecfg)
             targets.append(target)
