@@ -1,0 +1,138 @@
+// SPDX-License-Identifier: MIT
+// Copyright (C) 2025-2026, Opsero Electronic Design Inc.  All rights reserved.
+
+/*
+ * Quad SFP28 FMC (XXV) port config: ports-versal-0123 (ported from PetaLinux bsp/ports-versal-0123).
+ * Per-port wiring layered on the SDT-generated Linux device tree.
+ */
+
+/* Versal variant of port-config.dtsi for 4-port designs.
+ *
+ * Versal's SDT generates one xxv_ethernet IP per port, each in its own
+ * sfp_port<N> hierarchy: the labels are sfp_port0_xxv_ethernet through
+ * sfp_port3_xxv_ethernet. (ZynqMP has a single XXV with 4 channels and
+ * uses xxv_ethernet_0 / xxv_ethernet_0_1/_2/_3 — a different label set.)
+ * That's why this file sits in its own BSP overlay (bsp/ports-versal-0123)
+ * rather than in the shared bsp/ports-0123.
+ *
+ * Versal also doesn't need the QPLL reset GPIO that the ZynqMP design
+ * uses — the GTY/CPM5 quad doesn't get stuck the same way after a refclk
+ * glitch. The Vivado bd_versal.tcl correspondingly only adds an
+ * input-only AXI GPIO (axi_gpio_modabs) for the four MOD_ABS lines, and
+ * this DT only references that — no qpllreset-gpios property anywhere.
+ *
+ * MAC addresses: Versal's SDT already assigns sequential per-port MACs
+ * (00:0a:35:00:00:00..03), so no local-mac-address overrides here either.
+ */
+
+/ {
+	ref_si5328: ref_si5328 {
+	    compatible = "fixed-clock";
+	    #clock-cells = <0>;
+	    clock-frequency = <114285000>;
+	};
+};
+
+&axi_iic_0 {
+        i2c-mux@70 {
+                compatible = "nxp,pca9548";
+                #address-cells = <1>;
+                #size-cells = <0>;
+                reg = <0x70>;
+                sfp_eth0_i2c: i2c@0 {
+                        #address-cells = <1>;
+                        #size-cells = <0>;
+                        reg = <0>;
+                        /* SFP28 slot 0 */
+                };
+                sfp_eth1_i2c: i2c@1 {
+                        #address-cells = <1>;
+                        #size-cells = <0>;
+                        reg = <1>;
+                        /* SFP28 slot 1 */
+                };
+                sfp_eth2_i2c: i2c@2 {
+                        #address-cells = <1>;
+                        #size-cells = <0>;
+                        reg = <2>;
+                        /* SFP28 slot 2 */
+                };
+                sfp_eth3_i2c: i2c@3 {
+                        #address-cells = <1>;
+                        #size-cells = <0>;
+                        reg = <3>;
+                        /* SFP28 slot 3 */
+                };
+                i2c@4 {
+                        #address-cells = <1>;
+                        #size-cells = <0>;
+                        reg = <4>;
+                        fmc_si5328: clock-generator@68 {
+                                status = "okay";
+                                compatible = "silabs,si5328";
+                                reg = <0x68>;
+                                #address-cells = <1>;
+                                #size-cells = <0>;
+                                #clock-cells = <1>;
+                                clocks = <&ref_si5328>;
+                                clock-names = "xtal";
+
+                                fmc_si5328_clk: clk0@0 {
+                                        reg = <0>;
+                                        clock-frequency = <156250000>;
+                                };
+                        };
+                };
+        };
+};
+
+/* SFP cage descriptors. mod-def0-gpios references the 4-bit input
+ * channel of axi_gpio_modabs — line indices 0..3 are mod_abs[0..3].
+ * Active-low: line LOW = module present, line HIGH = module absent. */
+/ {
+        sfp_eth0: sfp-eth0 {
+                compatible = "sff,sfp";
+                i2c-bus = <&sfp_eth0_i2c>;
+                mod-def0-gpios = <&axi_gpio_modabs 0 1>;
+                maximum-power-milliwatt = <2000>;
+        };
+
+        sfp_eth1: sfp-eth1 {
+                compatible = "sff,sfp";
+                i2c-bus = <&sfp_eth1_i2c>;
+                mod-def0-gpios = <&axi_gpio_modabs 1 1>;
+                maximum-power-milliwatt = <2000>;
+        };
+
+        sfp_eth2: sfp-eth2 {
+                compatible = "sff,sfp";
+                i2c-bus = <&sfp_eth2_i2c>;
+                mod-def0-gpios = <&axi_gpio_modabs 2 1>;
+                maximum-power-milliwatt = <2000>;
+        };
+
+        sfp_eth3: sfp-eth3 {
+                compatible = "sff,sfp";
+                i2c-bus = <&sfp_eth3_i2c>;
+                mod-def0-gpios = <&axi_gpio_modabs 3 1>;
+                maximum-power-milliwatt = <2000>;
+        };
+};
+
+/* Per-port XXV overrides — link each MAC to its SFP cage so phylink
+ * delegates module presence detection to the SFP framework. */
+&sfp_port0_xxv_ethernet {
+        sfp = <&sfp_eth0>;
+};
+
+&sfp_port1_xxv_ethernet {
+        sfp = <&sfp_eth1>;
+};
+
+&sfp_port2_xxv_ethernet {
+        sfp = <&sfp_eth2>;
+};
+
+&sfp_port3_xxv_ethernet {
+        sfp = <&sfp_eth3>;
+};

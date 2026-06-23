@@ -17,6 +17,7 @@ This is the documentation for the 10G/25G Ethernet reference designs for the Ops
    requirements
    build_instructions
    petalinux
+   yocto
    advanced
    troubleshooting
    revision_history
