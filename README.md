@@ -16,7 +16,7 @@ Important links:
 
 ## Requirements
 
-This project is designed for version 2025.2 of the Xilinx tools (Vivado/Vitis/PetaLinux). 
+This project is designed for version 2025.2 of the Xilinx tools (Vivado/Vitis/PetaLinux/Yocto EDF). 
 If you are using an older version of the Xilinx tools, then refer to the 
 [release tags](https://github.com/fpgadeveloper/sfp28-fmc-xxv/tags "releases")
 to find the version of this repository that matches your version of the tools.
@@ -24,10 +24,13 @@ to find the version of this repository that matches your version of the tools.
 In order to test this design on hardware, you will need the following:
 
 * Vivado 2025.2
-* PetaLinux Tools 2025.2
+* PetaLinux Tools 2025.2, or Vitis 2025.2 for the Yocto (AMD EDF) flow
 * [Quad SFP28 FMC]
 * One of the target platforms listed below
 * [Xilinx 10G/25G Ethernet MAC/PCS (25GEMAC) License](https://www.xilinx.com/products/intellectual-property/ef-di-25gemac.html)
+  (all target designs use the 10G/25G Ethernet Subsystem IP; bitstream generation fails without it)
+* SFP+/SFP28 modules or cables matching the line rate of the target (10G, or 25G for `_25g`) and a
+  10G/25G link partner (NIC or switch) with FEC and auto-negotiation turned off
 
 ## Target designs
 
@@ -39,41 +42,41 @@ require a license to generate a bitstream with the AMD Xilinx tools.
 <!-- updater start -->
 ### 10G designs
 
-| Target board          | Target design      | Link speeds <br> supported | SFP28 ports | FMC Slot    | Vivado<br> Edition | IP<br>License |
-|-----------------------|--------------------|------------|-------------|-------------|-------|-------|
-| [UltraZed-EV Carrier] | `uzev`             | 10G        | 4x          | HPC         | Standard :free: | Required |
-| [VCK190]              | `vck190_fmcp1`     | 10G        | 4x          | FMCP1       | Enterprise | Required |
-| [VCK190]              | `vck190_fmcp2`     | 10G        | 4x          | FMCP2       | Enterprise | Required |
-| [VEK280]              | `vek280`           | 10G        | 4x          | FMCP        | Enterprise | Required |
-| [VHK158]              | `vhk158`           | 10G        | 4x          | FMCP        | Enterprise | Required |
-| [VMK180]              | `vmk180_fmcp1`     | 10G        | 4x          | FMCP1       | Enterprise | Required |
-| [VMK180]              | `vmk180_fmcp2`     | 10G        | 4x          | FMCP2       | Enterprise | Required |
-| [VPK120]              | `vpk120`           | 10G        | 4x          | FMCP        | Enterprise | Required |
-| [VPK180]              | `vpk180`           | 10G        | 4x          | FMCP        | Enterprise | Required |
-| [ZCU102]              | `zcu102_hpc0`      | 10G        | 4x          | HPC0        | Enterprise | Required |
-| [ZCU102]              | `zcu102_hpc1`      | 10G        | 4x          | HPC1        | Enterprise | Required |
-| [ZCU104]              | `zcu104`           | 10G        | 1x          | LPC         | Standard :free: | Required |
-| [ZCU106]              | `zcu106_hpc0`      | 10G        | 4x          | HPC0        | Standard :free: | Required |
-| [ZCU106]              | `zcu106_hpc1`      | 10G        | 1x          | HPC1        | Standard :free: | Required |
-| [ZCU111]              | `zcu111`           | 10G        | 4x          | FMCP        | Enterprise | Required |
-| [ZCU208]              | `zcu208`           | 10G        | 4x          | FMCP        | Enterprise | Required |
-| [ZCU216]              | `zcu216`           | 10G        | 4x          | FMCP        | Enterprise | Required |
+| Target board          | Target design      | Link speeds <br> supported | SFP28 ports | FMC Slot    | Yocto | Vivado<br> Edition | IP<br>License |
+|-----------------------|--------------------|------------|-------------|-------------|-------|-------|-------|
+| [UltraZed-EV Carrier] | `uzev`             | 10G        | 4x          | HPC         | :white_check_mark: | Standard :free: | Required |
+| [VCK190]              | `vck190_fmcp1`     | 10G        | 4x          | FMCP1       | :white_check_mark: | Enterprise | Required |
+| [VCK190]              | `vck190_fmcp2`     | 10G        | 4x          | FMCP2       | :white_check_mark: | Enterprise | Required |
+| [VEK280]              | `vek280`           | 10G        | 4x          | FMCP        | :white_check_mark: | Enterprise | Required |
+| [VHK158]              | `vhk158`           | 10G        | 4x          | FMCP        | :white_check_mark: | Enterprise | Required |
+| [VMK180]              | `vmk180_fmcp1`     | 10G        | 4x          | FMCP1       | :white_check_mark: | Enterprise | Required |
+| [VMK180]              | `vmk180_fmcp2`     | 10G        | 4x          | FMCP2       | :white_check_mark: | Enterprise | Required |
+| [VPK120]              | `vpk120`           | 10G        | 4x          | FMCP        | :white_check_mark: | Enterprise | Required |
+| [VPK180]              | `vpk180`           | 10G        | 4x          | FMCP        | :white_check_mark: | Enterprise | Required |
+| [ZCU102]              | `zcu102_hpc0`      | 10G        | 4x          | HPC0        | :white_check_mark: | Enterprise | Required |
+| [ZCU102]              | `zcu102_hpc1`      | 10G        | 4x          | HPC1        | :white_check_mark: | Enterprise | Required |
+| [ZCU104]              | `zcu104`           | 10G        | 1x          | LPC         | :white_check_mark: | Standard :free: | Required |
+| [ZCU106]              | `zcu106_hpc0`      | 10G        | 4x          | HPC0        | :white_check_mark: | Standard :free: | Required |
+| [ZCU106]              | `zcu106_hpc1`      | 10G        | 1x          | HPC1        | :white_check_mark: | Standard :free: | Required |
+| [ZCU111]              | `zcu111`           | 10G        | 4x          | FMCP        | :white_check_mark: | Enterprise | Required |
+| [ZCU208]              | `zcu208`           | 10G        | 4x          | FMCP        | :white_check_mark: | Enterprise | Required |
+| [ZCU216]              | `zcu216`           | 10G        | 4x          | FMCP        | :white_check_mark: | Enterprise | Required |
 
 ### 25G designs
 
-| Target board          | Target design      | Link speeds <br> supported | SFP28 ports | FMC Slot    | Vivado<br> Edition | IP<br>License |
-|-----------------------|--------------------|------------|-------------|-------------|-------|-------|
-| [VCK190]              | `vck190_fmcp1_25g` | 25G        | 4x          | FMCP1       | Enterprise | Required |
-| [VCK190]              | `vck190_fmcp2_25g` | 25G        | 4x          | FMCP2       | Enterprise | Required |
-| [VEK280]              | `vek280_25g`       | 25G        | 4x          | FMCP        | Enterprise | Required |
-| [VHK158]              | `vhk158_25g`       | 25G        | 4x          | FMCP        | Enterprise | Required |
-| [VMK180]              | `vmk180_fmcp1_25g` | 25G        | 4x          | FMCP1       | Enterprise | Required |
-| [VMK180]              | `vmk180_fmcp2_25g` | 25G        | 4x          | FMCP2       | Enterprise | Required |
-| [VPK120]              | `vpk120_25g`       | 25G        | 4x          | FMCP        | Enterprise | Required |
-| [VPK180]              | `vpk180_25g`       | 25G        | 4x          | FMCP        | Enterprise | Required |
-| [ZCU111]              | `zcu111_25g`       | 25G        | 4x          | FMCP        | Enterprise | Required |
-| [ZCU208]              | `zcu208_25g`       | 25G        | 4x          | FMCP        | Enterprise | Required |
-| [ZCU216]              | `zcu216_25g`       | 25G        | 4x          | FMCP        | Enterprise | Required |
+| Target board          | Target design      | Link speeds <br> supported | SFP28 ports | FMC Slot    | Yocto | Vivado<br> Edition | IP<br>License |
+|-----------------------|--------------------|------------|-------------|-------------|-------|-------|-------|
+| [VCK190]              | `vck190_fmcp1_25g` | 25G        | 4x          | FMCP1       | :white_check_mark: | Enterprise | Required |
+| [VCK190]              | `vck190_fmcp2_25g` | 25G        | 4x          | FMCP2       | :white_check_mark: | Enterprise | Required |
+| [VEK280]              | `vek280_25g`       | 25G        | 4x          | FMCP        | :white_check_mark: | Enterprise | Required |
+| [VHK158]              | `vhk158_25g`       | 25G        | 4x          | FMCP        | :white_check_mark: | Enterprise | Required |
+| [VMK180]              | `vmk180_fmcp1_25g` | 25G        | 4x          | FMCP1       | :white_check_mark: | Enterprise | Required |
+| [VMK180]              | `vmk180_fmcp2_25g` | 25G        | 4x          | FMCP2       | :white_check_mark: | Enterprise | Required |
+| [VPK120]              | `vpk120_25g`       | 25G        | 4x          | FMCP        | :white_check_mark: | Enterprise | Required |
+| [VPK180]              | `vpk180_25g`       | 25G        | 4x          | FMCP        | :white_check_mark: | Enterprise | Required |
+| [ZCU111]              | `zcu111_25g`       | 25G        | 4x          | FMCP        | :white_check_mark: | Enterprise | Required |
+| [ZCU208]              | `zcu208_25g`       | 25G        | 4x          | FMCP        | :white_check_mark: | Enterprise | Required |
+| [ZCU216]              | `zcu216_25g`       | 25G        | 4x          | FMCP        | :white_check_mark: | Enterprise | Required |
 
 [UltraZed-EV Carrier]: https://www.xilinx.com/products/boards-and-kits/1-1s78dxb.html
 [VCK190]: https://www.xilinx.com/vck190
@@ -98,13 +101,15 @@ Notes:
 
 ## Software
 
-These reference designs can be driven within a PetaLinux environment. 
-The repository includes all necessary scripts and code to build the PetaLinux environments. The table 
-below outlines the corresponding applications available in each environment:
+These reference designs are driven from embedded Linux, built with either PetaLinux or Yocto
+(AMD EDF). The repository includes all necessary scripts and code to build both. There is no
+standalone (baremetal) application. The table below outlines the applications available in each
+environment:
 
 | Environment      | Available Applications  |
 |------------------|-------------------------|
 | PetaLinux        | Built-in Linux commands<br>Additional tools: ethtool, phytool, iperf3 |
+| Yocto (AMD EDF)  | Built-in Linux commands<br>Additional tools: ethtool, phytool, iperf3, pciutils, mtd-utils, can-utils, nfs-utils |
 
 ## Build instructions
 
@@ -143,6 +148,16 @@ source the tool settings yourself before running the build.
 ```
 ./build.sh petalinux --target <target>
 ```
+
+#### Build Yocto (Linux only)
+
+```
+./build.sh yocto --target <target>
+```
+
+The Yocto flow needs Vitis 2025.2 and Google's `repo` tool. It produces a
+complete SD-card image (`rootfs.wic.xz`); see the Yocto section of the user
+guide for how to write it to the SD card.
 
 #### Build everything
 

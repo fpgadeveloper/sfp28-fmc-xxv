@@ -2,7 +2,7 @@
 
 This section is intended for users who want to modify the reference
 designs — adding IP to the block design, changing constraints, adding
-packages or drivers to the PetaLinux project, and so on. It describes
+packages or drivers to the PetaLinux or Yocto project, and so on. It describes
 how the repository is laid out, how the build flow works,
 how the PetaLinux BSPs are composed from layered fragments, and what
 modifications have been added on top of the stock AMD BSPs.
@@ -27,6 +27,12 @@ it.
 │   └── bsp/                   <- Per-board and per-port-config BSP fragments
 │       ├── uzev/, vck190/, …  <-   board-specific overlays
 │       └── ports-0/, ports-0123/, ports-versal-0123/   <- port-config overlays
+├── Yocto/
+│   ├── README.md              <- Description of the Yocto / EDF flow
+│   ├── scripts/               <- Yocto build engine (driven by build.py)
+│   └── bsp/
+│       ├── uzev/, vck190/, …  <-   board BSP layers (local.conf.append + meta-user/)
+│       └── port-configs/      <-   ports-0/, ports-0123/, ports-versal-0123/ overlay layers
 └── Vivado/
     ├── scripts/
     │   ├── build.tcl          <- Project creation + block design assembly
@@ -39,8 +45,8 @@ it.
             └── <target>.xdc   <- One XDC per target (pin assignments, timing)
 ```
 
-Per-target build outputs are written to `Vivado/<target>/` and
-`PetaLinux/<target>/`; packaged boot-image zips are written to
+Per-target build outputs are written to `Vivado/<target>/`,
+`PetaLinux/<target>/` and `Yocto/<target>/`; packaged boot-image zips are written to
 `bootimages/`. None of these are committed.
 
 ## Target naming
@@ -97,6 +103,7 @@ The build is organised into stages, each available as a sub-command:
 | `project`   | Create the Vivado project (`.xpr`) and block design.                                  |
 | `xsa`       | Synthesise, implement and export the hardware (`.xsa`).                               |
 | `petalinux` | Create the PetaLinux project from the XSA, apply the BSP overlays, build and package. |
+| `yocto`     | Create the Yocto / EDF workspace, generate the machine from the XSA, apply the BSP layers and build the SD-card image. |
 | `package`   | Gather the built boot artifacts into `bootimages/*.zip`.                              |
 | `all`       | Build every stage the target supports, then `package`.                                |
 
@@ -113,6 +120,9 @@ Because each stage builds its prerequisites first, a single `./build.sh all
   -> petalinux   : petalinux-create --template <zynqMP|versal> -> -config --get-hw-description <XSA>
                    -> copy bsp/<board>/project-spec/* + bsp/<port-config>/project-spec/* overlay
                    -> petalinux-build -> petalinux-package
+  -> yocto       : repo init/sync (EDF rel-v2025.2) -> sdtgen + gen-machineconf parse-sdt <XSA>
+                   -> add Yocto/bsp/<board> + Yocto/bsp/port-configs/<port-config> layers
+                   -> bitbake edf-linux-disk-image -> gather images/linux/
   -> package     : zip the boot files into bootimages/
 ```
 
@@ -388,6 +398,27 @@ adds U-Boot Kconfig options; `platform-top.h` overrides the U-Boot
 platform header; patches are listed in `SRC_URI:append` in
 `u-boot-xlnx_%.bbappend`.
 
+## Yocto side
+
+The Yocto BSPs under `Yocto/bsp/` carry the same modifications as the PetaLinux BSPs described in
+this section, in Yocto form:
+
+* `Yocto/bsp/<board>/conf/local.conf.append` — hostname, extra kernel arguments
+  (`BSP_EXTRA_BOOTARGS`) and rootfs size.
+* `Yocto/bsp/<board>/meta-user/` — a Yocto layer with the kernel configuration fragment
+  (`bsp.cfg`), the kernel patch `0001-xxv-qpllreset-gpio.patch` (Zynq UltraScale+), the board
+  device-tree additions (`system-user.dtsi`), the extra rootfs packages
+  (`recipes-core/images/edf-linux-disk-image.bbappend`), the ZCU104 FSBL VADJ patch, and the
+  U-Boot boot command that enables VADJ on the VCK190, VMK180, VPK120 and VPK180.
+* `Yocto/bsp/port-configs/<ports-*>/meta-user/` — the `port-config.dtsi` overlay of each target,
+  selected by the `portcfg` attribute of the target in `config/data.json`.
+
+To add a package to the Yocto image, add it to `IMAGE_INSTALL:append` in the board's
+`edf-linux-disk-image.bbappend`. To change the kernel arguments or the hostname, edit
+`local.conf.append`; then remove `Yocto/<target>/configdone.txt` so that the next
+`./build.sh yocto --target <target>` reconfigures the workspace. `Yocto/README.md` describes the
+flow in detail.
+
 ## Modifications layered on the stock BSPs
 
 The board BSPs in this repository started as the corresponding stock
@@ -495,6 +526,8 @@ file (and the directory structure needed to make Yocto pick it up via
 | `PetaLinux/<target>/`               | PetaLinux project. All Yocto build state lives here.      |
 | `PetaLinux/<target>/images/linux/`  | `BOOT.BIN`, `image.ub`, `boot.scr`, `rootfs.tar.gz`, etc. |
 | `PetaLinux/<target>/build/build.log`| PetaLinux build log.                                      |
-| `bootimages/`                       | Per-target zipped boot files (`<prj>_<target>_petalinux-<ver>.zip` and `<prj>_<target>_standalone-<ver>.zip`). |
+| `Yocto/<target>/`                   | Yocto / EDF workspace for the target.                     |
+| `Yocto/<target>/images/linux/`      | `BOOT.BIN`, `rootfs.wic.xz`, `rootfs.wic.bmap`, `Image`, `system.dtb`, `rootfs.tar.gz`, etc. |
+| `bootimages/`                       | Per-target zipped boot files (`<prj>_<target>_petalinux-<ver>.zip` and `<prj>_<target>_yocto-<ver>.zip`). |
 
 None of these directories are committed to the repository.

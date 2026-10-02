@@ -1,0 +1,158 @@
+From: Opsero <noreply@opsero.com>
+Date: Thu, 7 May 2026 12:00:00 -0400
+Subject: [PATCH] xilinx_axienet: pulse optional QPLL reset GPIO once at first
+ device reset
+
+Some Opsero designs (sfp28-fmc-xxv on ZynqMP) feed the GTH gt_ref_clk from
+a programmable Si5328 on the FMC card. The Linux i2c driver re-programs
+the chip during probe, which briefly glitches the GT reference clock and
+unlocks the GTH QPLL. The QPLL does not auto-recover.
+
+When the AXI DMA's m_axi data clocks are sourced from the XXV's
+tx_clk_out / rx_clk_out (recovered GT clocks), the DMA reset state machine
+cannot complete because those clocks aren't running until the QPLL is
+locked. The driver then reports "DMA reset timeout" and bails out of the
+open path with a half-reset DMA, which can fault on later register access.
+
+Fix by adding an optional "qpllreset-gpios" DT property and pulsing it at
+the start of axienet_device_reset() — before __axienet_device_reset()
+attempts the DMA reset. This re-locks the QPLL, gets the GT out of reset,
+and starts tx_clk_out / rx_clk_out flowing so the DMA reset can complete.
+
+Opt-in via DT — absence of the property leaves behavior unchanged.
+
+The XXV IP exposes a single qpllreset_in_0 pin that resets the entire
+shared GTH quad, so every port instance references the same GPIO line in
+DT. gpiolib treats consumer requests as exclusive, so a per-instance
+devm_gpiod_get_optional() would return -EBUSY for the 2nd–4th ports.
+Instead the descriptor is held in a module-scope static, claimed by
+whichever port probes first; the others just flag qpll_reset_pulse=true
+and pulse through the shared handle, serialised by a module-scope mutex.
+
+The pulse is one-shot per module load: the QPLL stays locked once it has
+been re-locked after the Si5328 reconfiguration, and pulsing again would
+briefly kill the GT clocks for any sibling port already carrying traffic
+(or any port whose phylink is mid-resolve, which can SLVERR a register
+read on the GT clock domain). The first device_reset() to run after probe
+fires the pulse and sets axienet_qpll_reset_pulsed; subsequent resets,
+including the in-band-status flap-induced ones on empty cages, leave the
+GT alone.
+
+Reference: AMD support forum
+https://adaptivesupport.amd.com/s/question/0D54U000061gBW6SAM/xxv-mac-gt-reset-not-complete
+
+Signed-off-by: Opsero <noreply@opsero.com>
+---
+ drivers/net/ethernet/xilinx/xilinx_axienet.h      |  3 ++
+ drivers/net/ethernet/xilinx/xilinx_axienet_main.c | 71 +++++++++++++++++++++++
+ 2 files changed, 74 insertions(+)
+
+diff --git a/drivers/net/ethernet/xilinx/xilinx_axienet.h b/drivers/net/ethernet/xilinx/xilinx_axienet.h
+--- a/drivers/net/ethernet/xilinx/xilinx_axienet.h
++++ b/drivers/net/ethernet/xilinx/xilinx_axienet.h
+@@ -1157,6 +1157,9 @@ struct axienet_local {
+ 	u16 assigned_rx_port[XAE_MAX_QUEUES];
+ 	bool gt_reset_done;
+ 	bool use_gt_gpio;
++	/* True if this port's DT node carries qpllreset-gpios. The actual
++	 * GPIO descriptor is shared module-wide; see xilinx_axienet_main.c. */
++	bool qpll_reset_pulse;
+ };
+
+ /**
+diff --git a/drivers/net/ethernet/xilinx/xilinx_axienet_main.c b/drivers/net/ethernet/xilinx/xilinx_axienet_main.c
+--- a/drivers/net/ethernet/xilinx/xilinx_axienet_main.c
++++ b/drivers/net/ethernet/xilinx/xilinx_axienet_main.c
+@@ -104,6 +104,22 @@ EXPORT_SYMBOL(mrmac_pll_rst);
+
+ static void axienet_rx_submit_desc(struct net_device *ndev);
+
++/* Shared QPLL reset GPIO state. The XXV IP exposes a single qpllreset_in_0
++ * pin that resets the entire shared GTH quad — every port instance refers
++ * to the same GPIO line in DT. The first port whose probe runs claims the
++ * descriptor; the others just flag qpll_reset_pulse=true and pulse via this
++ * shared handle. The mutex serialises pulses across ports.
++ *
++ * Pulsing is only needed once per module load — the QPLL stays locked
++ * after the first re-lock following the Si5328 refclk reconfiguration,
++ * and pulsing it again disrupts the GT clocks of any port that's already
++ * carrying traffic. axienet_qpll_reset_pulsed records that the one-shot
++ * pulse has fired so subsequent device_reset() calls leave the GT alone.
++ */
++static DEFINE_MUTEX(axienet_qpll_reset_lock);
++static struct gpio_desc *axienet_shared_qpll_reset_gpio;
++static bool axienet_qpll_reset_pulsed;
++
+ /* Option table for setting up Axi Ethernet hardware options */
+ static struct axienet_option axienet_options[] = {
+ 	/* Turn on jumbo packet support for both Rx and Tx */
+@@ -1199,6 +1215,31 @@ static int axienet_device_reset(struct net_device *ndev)
+ 	struct axienet_dma_q *q;
+ 	u32 i;
+
++	/* If the board uses a programmable refclk source (e.g. Si5328) that
++	 * gets reconfigured during boot, the QPLL may have lost lock from
++	 * the resulting refclk glitch and won't auto-recover. Pulse the
++	 * shared QPLL reset GPIO BEFORE attempting any DMA/GT reset, so the
++	 * GT comes out of reset and tx_clk_out/rx_clk_out start running —
++	 * designs that wire those clocks to the AXI DMA m_axi data clocks
++	 * need them alive for the DMA reset state machine to complete.
++	 *
++	 * One-shot: only the first device_reset() to run after probe needs
++	 * to pulse — once the QPLL is locked it stays locked, and pulsing
++	 * again would briefly kill the GT clocks for any sibling port that
++	 * is already carrying traffic.
++	 */
++	if (lp->qpll_reset_pulse && axienet_shared_qpll_reset_gpio) {
++		mutex_lock(&axienet_qpll_reset_lock);
++		if (!axienet_qpll_reset_pulsed) {
++			gpiod_set_value_cansleep(axienet_shared_qpll_reset_gpio, 1);
++			udelay(10);
++			gpiod_set_value_cansleep(axienet_shared_qpll_reset_gpio, 0);
++			usleep_range(1000, 2000);
++			axienet_qpll_reset_pulsed = true;
++		}
++		mutex_unlock(&axienet_qpll_reset_lock);
++	}
++
+ 	if (lp->axienet_config->mactype == XAXIENET_MRMAC) {
+ 		/* Reset MRMAC */
+ 		axienet_mrmac_reset(lp);
+@@ -5873,6 +5914,35 @@ static int axienet_probe(struct platform_device *pdev)
+ 		goto cleanup_mdio;
+ 	}
+
++	/* Optional QPLL reset GPIO. Pulsed once at the first device_reset()
++	 * to re-lock the GTH QPLL after the GT reference clock has been
++	 * glitched (e.g. by mid-boot reconfiguration of a programmable clock
++	 * source). The IP's qpllreset_in_0 pin resets the entire shared GTH
++	 * quad, so every port's DT node references the same GPIO line — the
++	 * first port to probe claims the descriptor for the whole module,
++	 * the others just flag themselves to pulse via the shared handle.
++	 */
++	if (of_property_present(pdev->dev.of_node, "qpllreset-gpios")) {
++		lp->qpll_reset_pulse = true;
++
++		mutex_lock(&axienet_qpll_reset_lock);
++		if (!axienet_shared_qpll_reset_gpio) {
++			struct gpio_desc *g;
++
++			g = devm_gpiod_get(&pdev->dev, "qpllreset",
++					   GPIOD_OUT_LOW);
++			if (IS_ERR(g)) {
++				ret = PTR_ERR(g);
++				mutex_unlock(&axienet_qpll_reset_lock);
++				dev_err(&pdev->dev, "Failed to get qpllreset GPIO (%d)\n",
++					ret);
++				goto cleanup_phylink;
++			}
++			axienet_shared_qpll_reset_gpio = g;
++		}
++		mutex_unlock(&axienet_qpll_reset_lock);
++	}
++
+ 	ret = register_netdev(lp->ndev);
+ 	if (ret) {
+ 		dev_err(lp->dev, "register_netdev() error (%i)\n", ret);
+--
+2.43.0

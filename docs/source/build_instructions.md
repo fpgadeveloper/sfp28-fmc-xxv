@@ -19,7 +19,23 @@ Others can be built with the Vivado ML Standard Edition **without a license**. T
 following section contains a column specifying which designs require a license, and which can be built without a 
 license.
 
-Additionally, some designs use IP cores that are licensed separately from the Vivado edition itself (for example: TEMAC, XXV Ethernet, HDMI). The **IP License** column in the tables below indicates the designs that require such a license to generate a bitstream; evaluation licenses are generally available from AMD for testing.
+Additionally, all of the designs in this repository use the 10G/25G Ethernet Subsystem (XXV
+Ethernet) IP, which is licensed separately from the Vivado edition itself. The **IP License**
+column in the tables below indicates the designs that require such a license to generate a
+bitstream (all of them). Without the license, the `xsa` stage stops at bitstream generation with
+an error such as:
+
+```none
+ERROR: [Common 17-69] Command failed: This design contains one or more cells for which bitstream generation is not permitted:
+sfp_i/xxv_ethernet_0/inst/..._CORE (<encrypted cellview>)
+```
+
+and earlier in the log Vivado reports
+`WARNING: [IP_Flow 19-650] IP license key 'xxv_eth_mac_pcs@2025.05' is enabled with a Design_Linking license.`
+A time-limited hardware evaluation license is available from AMD for testing. See
+[Licenses](requirements.md#licenses) for details, and
+[Troubleshooting](troubleshooting.md#bitstream-generation-fails-with-common-17-69) if you install
+a license after a failed build.
 
 
 ## Target designs
@@ -69,7 +85,7 @@ To see the available targets and the state of a build:
 ```
 
 ```{note}
-The embedded Linux images (PetaLinux) can only be built on a
+The embedded Linux images (PetaLinux and Yocto) can only be built on a
 native Linux machine; everything else builds on Windows too. On Windows, the
 runner refuses the Linux-only stages up front and prints the exact command
 to run on the Linux machine. For Versal targets on Windows, the runner also
@@ -150,10 +166,29 @@ connection), you can follow these instructions.
 
 The PetaLinux builds will then be configured for offline build.
 
+### Build Yocto
+
+The Yocto (AMD EDF) build requires a native Linux machine with Vivado 2025.2 and Vitis 2025.2
+installed, and Google's `repo` tool on the `PATH`. The runner sources the tool settings itself
+and builds the Vivado XSA first if it does not already exist:
+
+```
+./build.sh yocto --target <target>
+```
+
+The output products are written to `Yocto/<target>/images/linux/`. See [Yocto](yocto) for the
+requirements, the outputs and how to write the SD card.
+
+### Standalone (baremetal)
+
+This repository has no standalone (baremetal) application: the SFP28 ports are exercised from
+Linux. The `standalone` stage of the build runner reports its steps as skipped for these
+targets.
+
 ### Build everything
 
-This builds everything that the target supports — the Vivado project and XSA
-and the PetaLinux image — and gathers the boot images into `bootimages/*.zip`:
+This builds everything that the target supports — the Vivado project and XSA,
+the PetaLinux image and the Yocto image — and gathers the boot images into `bootimages/*.zip`:
 
 ```
 ./build.sh all --target <target>
@@ -162,5 +197,14 @@ and the PetaLinux image — and gathers the boot images into `bootimages/*.zip`:
 
 On Windows, `all` builds everything that the host can build and reports the
 Linux-only stages as `BLOCKED` rather than failing.
+
+The boot-image zips are named `sfp28-fmc-xxv_<target>_petalinux-2025-2.zip` and
+`sfp28-fmc-xxv_<target>_yocto-2025-2.zip`. Each one contains a `readme.txt` describing how to
+put the files on the SD card. If you rebuild a target, `./build.sh package --target <target>`
+rewrites any zip that is older than the newly built files.
+
+A full PetaLinux or Yocto build takes a lot of disk space. To free space once a target is built,
+`./build.sh clean --keep-boot --target <target>` deletes the intermediate build files but keeps
+the XSA, the boot files, the images and the zips.
 
 [supported Linux distributions]: https://docs.amd.com/r/en-US/ug1144-petalinux-tools-reference-guide/Setting-Up-Your-Environment

@@ -96,6 +96,19 @@ losing data on one of your hard drives.
    comport that corresponds to your target board.
 5. Connect and power your hardware.
 
+The boot files contain the board-specific settings that the Quad SFP28 FMC needs: on the ZCU104
+the FSBL is patched to read the VADJ voltage from the FMC EEPROM and enable VADJ, and on the
+VCK190, VMK180, VPK120 and VPK180 U-Boot programs and enables the VADJ regulator (1.5V) before it
+boots Linux. On the other boards VADJ is set by the board's standard boot flow.
+
+### Log in
+
+When the boot is complete, the console shows the login prompt of the image. The hostname is
+`<board>-sfp28-2025-2` (for example `zcu102-sfp28-2025-2`). Log in as **`petalinux`**; on the
+first login you are asked to choose a new password. The `petalinux` user can run commands as
+root with `sudo`. The image includes an SSH server, so you can also log in over the board's own
+Ethernet port: `ssh petalinux@<board-ip>`.
+
 ## Boot via JTAG
 
 ```{tip}
@@ -269,6 +282,9 @@ $ dmesg | grep -E 'renamed from|axienet.*(end|eth)[0-9]+:.*configuring|macb.*end
 `macb` is the dev board's built-in Ethernet (GEM).
 
 ## Example Usage
+
+For the link-partner settings (speed, FEC, auto-negotiation) and the throughput to expect, see
+[Testing the SFP28 ports](testing).
 
 The examples below were captured on a `zcu102_hpc0` build with an SFP28 module
 in Quad SFP28 FMC port 0, which is named `end1` on that board. Substitute your
